@@ -1,5 +1,5 @@
 'use client'
-import { PROJECT_PATHNAME } from "@/config/constants"
+import { CM_LISTING, PROJECT_PATHNAME } from "@/config/constants"
 import { useCreateHotoFormMutation } from "@/redux/api/hotoApi"
 import { CalendarDays, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -26,6 +26,8 @@ import SparesTable from "./moc/SparesTable"
 // import { onChange } from "react-toastify/dist/core/store"
 import CustomerAffected from "./moc/CustomerAffected"
 import DescriptionAttachments from "./moc/DescriptionAttachments"
+import { useMoc } from "@/hooks/useMoc"
+import { useCreateMocFormMutation, useCreateMocMutation, useGetAllDetailsMutation } from "@/redux/api/MocApis"
 
 // Utility wrapper for input label formatting
 export const InputLabelFormatWrapper = ({ children, label, error, type }) => {
@@ -53,7 +55,6 @@ export const InputLabelFormatWrapper = ({ children, label, error, type }) => {
 const CustomUserSearch = ({ options, onSelect, placeholder }) => {
     const [searchTerm, setSearchTerm] = useState("")
     const [showDropdown, setShowDropdown] = useState(false)
-
     const filteredOptions = options?.filter((option) =>
         option.displayText.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -212,7 +213,6 @@ export const componentMap = {
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
-
         return (
 
             <InputLabelFormatWrapper
@@ -289,15 +289,14 @@ export const componentMap = {
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
+      
+        const inputValue = value ?? componentProps?.defaultValue ?? "";
+
         return (
             <>
                 <InputLabelFormatWrapper
                     label={labelWithAsterisk}
                     error={componentProps.error}
-                // mendatory={componentProps.mendatory}
-                // mendatory={componentProps.mendatory && <span className="text-red-500">*</span>}
-
-
                 >
                     <InputField
                         id={componentProps.displayFiledName}
@@ -305,7 +304,9 @@ export const componentMap = {
                         type={"text"}
                         maxLength={componentProps?.maxlength}
                         placeholder={componentProps.displayLable}
-                        value={value || ""}
+                        // value={value || ""}
+                        value={inputValue}
+
                         onChange={(e) => onChange(e.target.value)}
                         disabled={componentProps?.disabled}
 
@@ -638,13 +639,12 @@ export const componentMap = {
             <InputLabelFormatWrapper
                 label={labelWithAsterisk}
                 error={componentProps.error}
-            // mendatory={componentProps.mendatory}
             >
                 <RadioButton
                     options={componentProps.displayOptions}
                     value={value}
                     onChange={onChange}
-                    error={componentProps.error}
+                // error={componentProps.error}
                 />
             </InputLabelFormatWrapper>
         )
@@ -663,20 +663,21 @@ export const componentMap = {
                 <InputLabelFormatWrapper
                     label={labelWithAsterisk}
                     error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                />
-                <DropdownInput
-                    id={componentProps.displayFiledName}
-                    className="w-full"
-                    type="number"
-                    placeholder={componentProps.displayLable}
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    dropdownValue={unit}
-                    onDropdownChange={(e) => setUnit(e.target.value)}
-                    options={['Hrs', 'Min']}
-                />
+
+                >
+                    <DropdownInput
+                        id={componentProps.displayFiledName}
+                        className="w-full flex"
+                        type="number"
+                        placeholder={componentProps.displayLable}
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        dropdownValue={unit}
+                        onDropdownChange={(e) => setUnit(e.target.value)}
+                        options={['Hrs', 'Min']}
+                    />
+                </InputLabelFormatWrapper>
+
             </>
         )
     },
@@ -831,15 +832,6 @@ export const componentMap = {
             </>
         )
     },
-    // CUSTOM_BLOCK_PRECHANGE_TESTING: ({ value, onChange, componentProps }) => {
-    //     return (
-    //         <DescriptionAttachments
-    //             value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
-    //             onChange={onChange}
-    //             componentProps={componentProps}
-    //         />
-    //     );
-    // },    
     CUSTOM_BLOCK_POSTCHANGE_TESTING: ({ value, onChange, componentProps }) => {
 
         return (
@@ -879,18 +871,17 @@ export const FormProvider = ({ children }) => {
 
 // FormBuilder Component
 const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
-    console.log("formConfigDetails--11", formConfig);
+    console.log("formConfigDetails--->", formConfig);
 
     const router = useRouter()
     const [activeStep, setActiveStep] = useState(0)
-    // const [formValues, setFormValues] = useState(() => [
-    //     ...Array(formConfig.formSteps?.length).fill({})
-    // ])
+
     const [formValues, setFormValues] = useState(() => [
         ...Array(formConfig?.formSteps?.length).fill({})
     ]);
     const [errors, setErrors] = useState([{}])
     const [createHotoForm] = useCreateHotoFormMutation()
+    const [createMocForm] = useCreateMocFormMutation()
 
     const handleInputChange = ({ activeStep, id, value }) => {
         setFormValues((prev) => {
@@ -927,6 +918,29 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     //     return isValid
     // }
 
+    // const validateStep = () => {
+    //     const currentStepComponents = groupedComponents[activeStep] || []
+    //     const newErrors = [...errors] // keep same shape if needed
+    //     let isValid = true
+
+    //     currentStepComponents.forEach((component) => {
+    //         if (component.mendatory) {
+    //             const value = formValues[activeStep]?.[component.displayFiledName]
+    //             const isEmpty =
+    //                 value === undefined || value === null || value === ""
+    //             if (isEmpty) {
+    //                 if (!newErrors[activeStep]) newErrors[activeStep] = {}
+    //                 newErrors[activeStep][component.displayFiledName] =
+    //                     "This field is required"
+    //                 isValid = false
+    //             }
+    //         }
+    //     })
+
+    //     setErrors(newErrors)
+    //     return isValid
+    // }
+
     const validateStep = () => {
         const currentStepComponents = groupedComponents[activeStep] || []
         const newErrors = [...errors] // keep same shape if needed
@@ -937,10 +951,14 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                 const value = formValues[activeStep]?.[component.displayFiledName]
                 const isEmpty =
                     value === undefined || value === null || value === ""
+
                 if (isEmpty) {
                     if (!newErrors[activeStep]) newErrors[activeStep] = {}
+
+                    // Use API's displayAlertText if available, else fallback
                     newErrors[activeStep][component.displayFiledName] =
-                        "This field is required"
+                        component.displayAlertText || "This field is required"
+
                     isValid = false
                 }
             }
@@ -950,54 +968,13 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         return isValid
     }
 
-
-    // const handleNext = () => {
-    //     if (validateStep()) {
-    //     }
-    //     setActiveStep((prev) =>
-    //         Math.min(prev + 1, formConfig.formSteps.length - 1)
-    //     )
-    // }
     const handleNext = () => {
-        // if (validateStep()) {
-        // }
-        setActiveStep((prev) =>
-            Math.min(prev + 1, formConfig.formSteps.length - 1)
-        )
+        if (validateStep()) {
+            setActiveStep((prev) =>
+                Math.min(prev + 1, formConfig.formSteps.length - 1)
+            )
+        }
     }
-
-
-    // const validateStep = () => {
-    //     const currentStepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents
-    //     if (!currentStepComponents) return true
-
-    //     const newErrors = [{}]
-    //     let isValid = true
-
-    //     currentStepComponents.forEach((component) => {
-    //         if (component.mendatory) {
-    //             const value = formValues[activeStep]?.[component.displayFiledName]
-    //             const isEmpty =
-    //                 value === undefined || value === null || value === ""
-    //             // ||isValidHotoFormTabObject(value)
-    //             if (isEmpty) {
-    //                 newErrors[activeStep][component.displayFiledName] =
-    //                     "This field is required"
-    //                 isValid = false
-    //             }
-    //         }
-    //     })
-    //     setErrors(newErrors)
-    //     return isValid
-    // }
-
-    // const handleNext = () => {
-    //     if (validateStep()) {
-    //         setActiveStep((prev) =>
-    //             Math.min(prev + 1, formConfig.formSteps.length - 1)
-    //         )
-    //     }
-    // }
 
     const handleBack = () => {
         setActiveStep((prev) => Math.max(prev - 1, 0))
@@ -1009,28 +986,53 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         setActiveStep(0)
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        if (validateStep()) {
-            createHotoForm({
-                hotoId: hotoId,
-                hotoFormData: formValues
-            })
-                .unwrap()
-                .then((res) => {
-                    console.log('res', res);
+    // const handleSubmit = (e) => {
+    //     e.preventDefault()
+    //     if (validateStep()) {
+    //         createHotoForm({
+    //             hotoId: hotoId,
+    //             hotoFormData: formValues
+    //         })
+    //             .unwrap()
+    //             .then((res) => {
+    //                 console.log('res', res);
 
-                    toast.success(res.message || "Form submitted successfully")
-                    router.push(CM_LISTING)
-                })
-                .catch((err) => {
-                    console.log(err)
-                })
-            // Handle form submission
+    //                 toast.success(res.message || "Form submitted successfully")
+    //                 router.push(CM_LISTING)
+    //             })
+    //             .catch((err) => {
+    //                 console.log(err)
+    //             })
+    //         // Handle form submission
+    //     }
+    // }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (validateStep()) {
+            try {
+                const res = await createMocForm({
+                    // file: selectedFile, 
+                    mocConfigId: formConfig?.id,
+                    mocNo: "SR999", 
+                    mocFormData: formValues
+                });
+                console.log('res', res);
+
+                toast.success(res.message || "Form submitted successfully");
+                router.push(CM_LISTING);
+
+            } catch (err) {
+                console.error("MOC Form Submit Error:", err);
+                toast.error(err?.message || "Submission failed");
+            }
         }
-    }
+    };
+
 
     const stepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents || []
+    console.log('isFormGrid', formConfig?.formSteps?.[activeStep]?.isFormGrid);
+    console.log('mocNo', formConfig?.mocNo);
 
     // Group components by SEPARATORs
     const groupedComponents = []
@@ -1049,82 +1051,29 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         groupedComponents.push(currentGroup)
     }
 
-    console.log('groupedComponents', groupedComponents);
+    // console.log('groupedComponents', groupedComponents);
 
 
     return (
         <form className="overflow-auto h-screen">
-            <StepperProgressBar
+            {/* <StepperProgressBar
                 className="max-w-xl mx-auto"
                 activeStep={activeStep}
                 steps={formConfig?.formSteps?.map((step) => ({
                     label: step.stepName
                 }))}
-            />
+            /> */}
+            {formConfig?.formSteps?.length > 1 && (
+                <StepperProgressBar
+                    className="max-w-xl mx-auto"
+                    activeStep={activeStep}
+                    steps={formConfig.formSteps.map((step) => ({
+                        label: step.stepName
+                    }))}
+                />
+            )}
+
             <div className="space-y-4 overflow-auto h-[70vh] max-w-full mx-auto ">
-            {/* <div className=" overflow-auto h-screen  "> */}
-                {/* <Card className="grid grid-cols-1 gap-4"> */}
-                {/* {formConfig.formSteps[activeStep].stepDescription && (
-                    <div className="col-span-1 text-black font-semibold mb-3">
-                        <h5 className="text-lg">
-                            {formConfig.formSteps[activeStep].stepName}
-                        </h5>
-                        <p className="mt-2 text-sm font-normal text-gray-600">
-                            {formConfig.formSteps[activeStep].stepDescription}
-                        </p>
-                    </div>
-                )} */}
-                {/* {groupedComponents.map(
-                        (componentGroup, index) => {
-                            return componentGroup.map((component, subIndex) => {
-                                const Component =
-                                    componentMap[component.displayInputElementType]
-
-                                if (!Component) return null
-
-                                return (
-                                    <Component
-                                        key={`${index}-${subIndex}`}
-                                        value={
-                                            [
-                                                "CUSTOM_USER_BLOCK",
-                                                "TAB_FORM_BLOCK"
-                                            ].includes(
-                                                component.displayInputElementType
-                                            )
-                                                ? formValues[activeStep][
-                                                component.displayFiledName
-                                                ]
-                                                : !!formValues[activeStep][
-                                                component.displayFiledName
-                                                ]
-                                                    ? formValues[activeStep][
-                                                    component.displayFiledName
-                                                    ]
-                                                    : null
-                                        }
-                                        onChange={(value) => {
-                                            handleInputChange({
-                                                activeStep,
-                                                id: component.displayFiledName,
-                                                value
-                                            })
-                                        }}
-                                        componentProps={{
-                                            ...component,
-                                            error:
-                                                "TAB_FORM_BLOCK" !==
-                                                    component.displayInputElementType
-                                                    ? errors[activeStep]?.[
-                                                    component.displayFiledName
-                                                    ]
-                                                    : null
-                                        }}
-                                    />
-                                )
-                            })
-                        }
-                    )} */}
                 {groupedComponents.map((group, groupIndex) => {
                     const separator = group.find((comp) => comp.displayInputElementType === "SEPARATOR");
                     const title = separator?.separatorName || formConfig?.formSteps?.[activeStep]?.stepName;
@@ -1137,10 +1086,12 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_IMPLEMENTATION" ||
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_BACKOUT" ||
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_PRECHANGE_TESTING" ||
-                        group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_POSTCHANGE_TESTING" 
+                        group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_POSTCHANGE_TESTING"
+
+                    // const formGrid = formConfig?.formSteps?.[activeStep]?.isFormGrid
 
 
-                    console.log('description-->', group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_PRECHANGE_TESTING");
+                    console.log('description-->', group);
                     return (
                         <Card key={groupIndex} className="rounded-2xl mb-6 p-4 pt-0">
                             <div className="text-lg font-bold mb-0">{title}</div>
