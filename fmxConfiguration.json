@@ -1,0 +1,22 @@
+{
+    "test": {
+        "image": "https://placehold.co/600x400/png",
+        "accountId": "ae1121b0-72b9-4a1d-8395-6852c55b239d",
+        "host": "https://test.punctualiti.tech",
+        "dashboard": {
+            "port": "3900"
+        },
+        "helpdesk": {
+            "port": "3901"
+        },
+        "helpdeskFeedback": {
+            "port": "3902"
+        },
+        "vms": {
+            "port": "3903"
+        },
+        "employeeManagement": {
+            "port": "3904"
+        }
+    }
+}

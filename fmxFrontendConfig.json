@@ -1,0 +1,22 @@
+    {
+    
+        "sify": {
+            "accountId": "fbc3c11b-262f-11ea-956b-00185131e9dd",
+            "host": "https://34b999c2111d.ngrok-free.app",
+            "dashboard": {
+                "port": "3200"
+            },
+            "helpdesk": {
+                "port": "3201"
+            },
+            "helpdeskFeedback": {
+                "port": "3202"
+            },
+            "vms": {
+                "port": "3203"
+            },
+            "employeeManagement": {
+                "port": "3204"
+            }
+        }
+    }
