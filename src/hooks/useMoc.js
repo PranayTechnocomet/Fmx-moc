@@ -1,20 +1,21 @@
 import { useEffect } from "react"
-import { useUploadFileMutation } from "../redux/api/MocApis"
+import { useCreateMocFormMutation, useCreateMocMutation, useUploadFileMutation } from "../redux/api/MocApis"
 import { toast } from "react-toastify"
 
 
 export const useMoc = () => {
     const [fileUploads] = useUploadFileMutation();
+    const [createMoc] = useCreateMocFormMutation();
 
     // File Upload
     const fileUpload = async (file) => {
         try {
-          console.log('file', file)
+            console.log('file', file)
 
             // Wrap File in FormData
             const formData = new FormData();
-          formData.append("file", file); // must match multer's field name
-          console.log('--',formData);
+            formData.append("file", file); // must match multer's field name
+            console.log('--', formData);
 
             const response = await fileUploads(formData).unwrap();
 
@@ -31,28 +32,40 @@ export const useMoc = () => {
         }
     };
 
-    // const fileUpload = async (file) => {
-    //     try {
-        //   const formData = new FormData();
-        //   formData.append("assetAttachment", file); // must match multer's field name
-      
-    //       const response = await fileUploads(formData).unwrap();
-      
-    //       if (response.success === 1) {
-    //         return response;
-    //       } else {
-    //         toast.error(response.message || "File Upload Failed", { toastId: "File Upload Error" });
-    //         throw new Error(response.message || "Submission failed");
-    //       }
-    //     } catch (error) {
-    //       console.error("Error uploading file:", error);
-    //       throw error;
-    //     }
-    //   };
-      
+    // Create MOC
+    const createMocForm = async ({ file, mocConfigId, mocNo, mocFormData }) => {
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("mocConfigId", mocConfigId);
+            formData.append("mocNo", mocNo);
+            formData.append("mocFormData", JSON.stringify(mocFormData)); // JSON.stringify for arrays/objects
+
+            const response = await createMoc(formData).unwrap();
+            console.log('moc create', response);
+            
+
+            if (response.success === 1) {
+                toast.success(response.message || "MOC created successfully");
+                return response;
+            } else {
+                toast.error(response.message || "File Upload Failed");
+                throw new Error(response.message || "Submission failed");
+            }
+        } catch (error) {
+            const errMsg = error?.message || error?.data?.message || "An error occurred while uploading the file.";
+            toast.error(errMsg);
+            throw error;
+        }
+    };
+
+
+
+
 
 
     return {
-        fileUpload
+        fileUpload,
+        createMocForm
     }
 }

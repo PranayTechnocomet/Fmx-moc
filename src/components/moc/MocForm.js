@@ -91,13 +91,16 @@ export default function MocForm() {
 
     if (loading || !formConfig?.formSteps) {
         return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full  flex justify-center items-center h-12 w-12 border-t-2 border-b-2 border-primary-100"></div>
-            </div>
+            // <div className="w-full h-full flex items-center justify-center mt-10">
+            //     <div className="animate-spin rounded-full  flex justify-center items-center h-12 w-12 border-t-2 border-b-2 border-primary-100"></div>
+            // </div>
+            <div className="flex justify-center items-center  h-[calc(100vh-120px)]">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
         );
     }
 
-    const isGridLayout = true
+    const isGridLayout = formConfig?.formSteps?.isFormGrid !== true;
 
     return (
         <div className='mt-4 overflow-auto h-screen w-full'>
@@ -105,12 +108,8 @@ export default function MocForm() {
                 <FormBuilder
                     formConfig={formConfig}
                     isGridLayout={isGridLayout}
-                    hotoId={formConfig?.id} // or formIdParam if required
+                    hotoId={formConfig?.id}
                 />
-                {/* <DefaultFormBuilder
-                    formConfig={formConfig}
-                    hotoId={formConfig?.id} // or formIdParam if required
-                /> */}
             </FormProvider>
         </div>
     );
