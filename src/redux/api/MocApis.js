@@ -34,9 +34,12 @@ export const MocApis = baseApi.injectEndpoints({
 
         // Get List 
         getCmList: builder.mutation({
-            query: () => ({
+            query: (filters) => ({
                 url: URL_PREFIX + `/moc/list`,
-                method: "POST"
+                method: "POST",
+                body: {
+                    ...filters
+                }
             }),
             overrideExisting: true
         }),

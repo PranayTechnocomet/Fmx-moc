@@ -1,8 +1,7 @@
 "use client"
-import { EllipsisIcon, EllipsisVertical, EyeIcon } from "lucide-react"
+import { EllipsisVertical, EyeIcon } from "lucide-react"
 import Button from "../Button"
 import { formatDistanceToNow } from "date-fns"
-import { useState } from "react"
 
 export const RenderTableRow = ({
     row,
