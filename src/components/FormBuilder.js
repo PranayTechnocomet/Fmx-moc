@@ -289,7 +289,7 @@ export const componentMap = {
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
-      
+
         const inputValue = value ?? componentProps?.defaultValue ?? "";
 
         return (
@@ -1006,28 +1006,56 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     //         // Handle form submission
     //     }
     // }
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     if (validateStep()) {
+    //         try {
+    //             const res = await createMocForm({
+    //                 // file: selectedFile, 
+    //                 mocConfigId: formConfig?.id,
+    //                 mocNo: "SR999", 
+    //                 mocFormData: formValues
+    //             });
+    //             console.log('res', res);
+
+    //             toast.success(res.message || "Form submitted successfully");
+    //             router.push(CM_LISTING);
+
+    //         } catch (err) {
+    //             console.error("MOC Form Submit Error:", err);
+    //             toast.error(err?.message || "Submission failed");
+    //         }
+    //     }
+    // };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validateStep()) {
             try {
                 const res = await createMocForm({
-                    // file: selectedFile, 
                     mocConfigId: formConfig?.id,
-                    mocNo: "SR999", 
-                    mocFormData: formValues
-                });
-                console.log('res', res);
+                    mocNo: formConfig?.mocNo,
+                    mocData: formValues
+                }).unwrap();
 
-                toast.success(res.message || "Form submitted successfully");
-                router.push(CM_LISTING);
+                console.log("MOC Form API Response:", res);
+
+                if (res.success) {
+                    toast.success(res.message || "Form submitted successfully");
+                    router.push(CM_LISTING);
+                } else {
+                    toast.error(res.error || res.message || "Submission failed");
+                }
 
             } catch (err) {
                 console.error("MOC Form Submit Error:", err);
-                toast.error(err?.message || "Submission failed");
+                toast.error(err?.data?.message || err?.message || "Submission failed");
             }
         }
     };
+
 
 
     const stepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents || []
@@ -1097,7 +1125,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                             <div className="text-lg font-bold mb-0">{title}</div>
                             <div className="text-sm font-normal text-gray-600 mb-5">{separator ? "" : description}</div>
 
-                            <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} >
+                            {/* <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} > */}
+                            <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} >
 
                                 {group.map((component, index) => {
                                     if (component.displayInputElementType === "SEPARATOR") return null;
