@@ -8,22 +8,28 @@ import authReducer from "./slices/authSlice"
 import hierarchyReducer from "./slices/hierarchySlice"
 import getGatePassReducer from "./slices/gatePassSlice"
 import mocReducer from "./slices/mocSlice"
+
+const apiMiddlewares = [
+  baseApi.middleware,
+  hierarchyApi.middleware,
+  hotoApi.middleware,
+  usersApi.middleware
+]
+
+// Remove duplicates (by reference)
+const uniqueMiddlewares = Array.from(new Set(apiMiddlewares))
+
 export const store = configureStore({
-    reducer: {
-        [baseApi.reducerPath]: baseApi.reducer,
-        auth: authReducer,
-        getGatePass: getGatePassReducer,
-        hierarchy: hierarchyReducer,
-        [hierarchyApi.reducerPath]: hierarchyApi.reducer,
-        moc: mocReducer,
-        [hotoApi.reducerPath]: hotoApi.reducer,
-        [usersApi.reducerPath]: usersApi.reducer
-    },
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(
-            baseApi.middleware,
-            hierarchyApi.middleware,
-            hotoApi.middleware,
-            usersApi.middleware
-        )
+  reducer: {
+    [baseApi.reducerPath]: baseApi.reducer,
+    auth: authReducer,
+    getGatePass: getGatePassReducer,
+    hierarchy: hierarchyReducer,
+    [hierarchyApi.reducerPath]: hierarchyApi.reducer,
+    moc: mocReducer,
+    [hotoApi.reducerPath]: hotoApi.reducer,
+    [usersApi.reducerPath]: usersApi.reducer
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(uniqueMiddlewares)
 })
