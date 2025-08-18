@@ -11,39 +11,35 @@ const initialState = {
     showReturnAllColumn: false,
     attachments: [{ id: Date.now(), description: "", file: null }],
     reloadSecurityData: false,
-    
-
+    mocDetails: null,
 }
 
-const gatePassSlice = createSlice({
+const mocSlice = createSlice({
     name: "moc",
     initialState,
     reducers: {
-        setGatePasses: (state, action) => {
-            state.gatePasses = action.payload
-        },
         setSelectedRequestType: (state, action) => {
             state.selectedRequestType = action.payload
         },
-        setSelectedInwardType: (state, action) => {
-            state.selectedInwardType = action.payload
-        },
-        setShowTransferTypes: (state, action) => {
-            state.showTransferTypes = action.payload
-        },
-        setShowForm: (state, action) => {
-            state.showForm = action.payload
-        },
-        setShowReturnAllColumn: (state, action) => {
-            state.showReturnAllColumn = action.payload;
-        },
-        setAttachmentFromAPI: (state, action) => {
-            state.attachments = action.payload.map(item => ({
-                id: Date.now() + Math.random(), // Ensure unique ID
-                description: item.description || "",
-                file: item.fileName || "",
-            }));
-        },
+    //     setSelectedInwardType: (state, action) => {
+    //         state.selectedInwardType = action.payload
+    //     },
+    //     setShowTransferTypes: (state, action) => {
+    //         state.showTransferTypes = action.payload
+    //     },
+    //     setShowForm: (state, action) => {
+    //         state.showForm = action.payload
+    //     },
+    //     setShowReturnAllColumn: (state, action) => {
+    //         state.showReturnAllColumn = action.payload;
+    //     },
+    //     setAttachmentFromAPI: (state, action) => {
+    //         state.attachments = action.payload.map(item => ({
+    //             id: Date.now() + Math.random(), // Ensure unique ID
+    //             description: item.description || "",
+    //             file: item.fileName || "",
+    //         }));
+    //     },
         // toggleReloadSecurityData: (state) => {
         //     state.reloadSecurityData = !state.reloadSecurityData;
         // },
@@ -60,11 +56,14 @@ const gatePassSlice = createSlice({
         removeAttachment: (state, action) => {
             state.attachments = state.attachments.filter(att => att.id !== action.payload);
         },
+        setMocDetails: (state, action) => {
+            state.mocDetails = action.payload
+        },
     }
 })
 
-export const { setGatePasses, setSelectedRequestType, setSelectedInwardType, setShowTransferTypes,
+export const { setSelectedRequestType, setSelectedInwardType, setShowTransferTypes,
     setShowForm, setShowReturnAllColumn, setAttachmentFromAPI,
-    addAttachment, updateAttachment, removeAttachment
-} = gatePassSlice.actions
-export default gatePassSlice.reducer
+    addAttachment, updateAttachment, removeAttachment, setMocDetails
+} = mocSlice.actions
+export default mocSlice.reducer

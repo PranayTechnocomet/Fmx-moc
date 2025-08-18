@@ -108,6 +108,15 @@ export const MocApis = baseApi.injectEndpoints({
             overrideExisting: true
         }),
 
+        // Get MOC Details
+        getMocDetails: builder.mutation({
+            query: (mocId) => ({
+                url: URL_PREFIX + `/moc/detail`,
+                method: "POST",
+                body: { mocId }
+            })
+        }),
+
         // Create MOC
         // createMocForm: builder.mutation({
         //     query: ({ siteId, token, mocConfigId, mocNo, mocData }) => ({
@@ -147,5 +156,6 @@ export const {
     useGetListMutation,
     useUploadFileMutation,
     useGetCmListMutation,
+    useGetMocDetailsMutation,
     useCreateMocFormMutation
 } = MocApis

@@ -78,6 +78,7 @@ const CmListning = () => {
     const [actionModalIndex, setActionModalIndex] = useState(null);
     const { selectedSite, clusters } = useHierarchy();
     const [sites, setSites] = useState([])
+    const router = useRouter()
 
 
     const [pagination, setPagination] = useState({
@@ -212,6 +213,10 @@ const CmListning = () => {
     console.log("filters", filters)
     console.log("sites", sites)
 
+    const handleViewDetails = (row) => {
+        console.log("row", row)
+        router.push(`/createChangeRequest/cm-listing/${row.mocId}`)
+    }
 
     return (
         <>
@@ -422,6 +427,7 @@ const CmListning = () => {
                                         setActionModalIndex={
                                             setActionModalIndex
                                         }
+                                        handleViewDetails={handleViewDetails}
                                     />
                                 ))}
                             </tr>
