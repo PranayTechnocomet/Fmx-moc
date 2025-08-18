@@ -32,13 +32,22 @@ export const hierarchyApi = baseApi.injectEndpoints({
             //     }))
             // }),
             transformResponse: (response) => {
-                const sites = response?.data ?? []; // default to empty array if undefined
+                console.log("getSites API response:", response);
+
+                // Ensure we always work with an array
+                const clusters = Array.isArray(response?.data)
+                    ? response.data
+                    : Array.isArray(response)
+                        ? response
+                        : [];
+
                 return {
-                    clusters: sites.map((e) => ({
+                    clusters: clusters.map((e) => ({
                         id: e.clusterName,
                         name: e.clusterName,
                         ...e
-                    }))
+                    })),
+                    sites: clusters.flatMap((c) => c.sites || [])
                 };
             },
             providesTags: ["Sites"]
@@ -50,8 +59,8 @@ export const hierarchyApi = baseApi.injectEndpoints({
             })
         }),
     }),
-    overrideExisting: true  
-    
+    overrideExisting: true
+
 })
 
 export const {

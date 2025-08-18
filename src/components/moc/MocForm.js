@@ -77,7 +77,7 @@ export default function MocForm() {
                 const formIdParam = url.searchParams.get('formId');
 
                 const response = await getAllDetails(formIdParam).unwrap();
-                console.log("response11111", response);
+                console.log("response11111", response?.data?.mocConfigId);
 
                 // Ensure formConfig has correct structure
                 setFormConfig(response?.data || {});
@@ -91,9 +91,6 @@ export default function MocForm() {
 
     if (loading || !formConfig?.formSteps) {
         return (
-            // <div className="w-full h-full flex items-center justify-center mt-10">
-            //     <div className="animate-spin rounded-full  flex justify-center items-center h-12 w-12 border-t-2 border-b-2 border-primary-100"></div>
-            // </div>
             <div className="flex justify-center items-center  h-[calc(100vh-120px)]">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
         </div>

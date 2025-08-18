@@ -104,23 +104,36 @@ export const MocApis = baseApi.injectEndpoints({
             }),
             overrideExisting: true
         }),
+
         // Create MOC
+        // createMocForm: builder.mutation({
+        //     query: ({ siteId, token, mocConfigId, mocNo, mocData }) => ({
+        //         url: URL_PREFIX + `/moc/create`,
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "siteId": siteId,
+        //             "Authorization": `Bearer ${token}`
+        //         },
+        //         body: {
+        //             mocConfigId,
+        //             mocNo,
+        //             mocData
+        //         }
+        //     })
+        // }),
         createMocForm: builder.mutation({
-            query: ({ siteId, token, mocConfigId, mocNo, mocData }) => ({
-                url: URL_PREFIX + `/moc/create`,
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "siteId": siteId,
-                    "Authorization": `Bearer ${token}`
-                },
-                body: {
-                    mocConfigId,
-                    mocNo,
-                    mocData
-                }
+            query: ({ mocConfigId, mocNo, mocFormData }) => ({
+              url: URL_PREFIX + `/moc/create`,
+              method: "POST",
+              body: {
+                mocConfigId,
+                mocNo,
+                mocFormData
+              }
             })
-        }),
+          }),
+          
         
     }),
     overrideExisting: true  

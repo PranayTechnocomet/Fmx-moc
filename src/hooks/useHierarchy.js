@@ -18,43 +18,81 @@ export const useHierarchy = () => {
 
     const [getSites, { data, isLoading }] = useGetSitesMutation()
 
+    // useEffect(() => {
+    //     // Fetch sites on component mount
+    //     getSites()
+    //         .unwrap()
+    //         .then((transformedData) => {
+    //             // Set initial cluster and sites
+    //             const selctedSiteLocal = localStorage.getItem("selectedSite")
+    //             const selectedClusterLocal =
+    //                 localStorage.getItem("selectedCluster")
+    //             dispatch(setClusters(transformedData.clusters))
+    //             dispatch(setSites(transformedData.sites))
+    //             // Set default selections
+    //             if (
+    //                 transformedData.clusters.length > 0 &&
+    //                 !selectedClusterLocal
+    //             ) {
+    //                 dispatch(setSelectedCluster(transformedData.clusters[0].id))
+    //                 dispatch(setSites(transformedData.clusters[0].sites))
+    //                 localStorage.setItem(
+    //                     "selectedCluster",
+    //                     transformedData.clusters[0].id
+    //                 )
+    //             } else {
+    //                 dispatch(setSelectedCluster(selectedClusterLocal))
+    //                 dispatch(
+    //                     setSites(
+    //                         transformedData.clusters.find(
+    //                             (cluster) => cluster.id === selectedClusterLocal
+    //                         )?.sites || []
+    //                     )
+    //                 )
+    //             }
+    //             if (selctedSiteLocal) {
+    //                 dispatch(setSelectedSite(selctedSiteLocal))
+    //             }
+    //         })
+    // }, [dispatch])
     useEffect(() => {
-        // Fetch sites on component mount
         getSites()
             .unwrap()
             .then((transformedData) => {
-                // Set initial cluster and sites
-                const selctedSiteLocal = localStorage.getItem("selectedSite")
-                const selectedClusterLocal =
-                    localStorage.getItem("selectedCluster")
-                dispatch(setClusters(transformedData.clusters))
-                dispatch(setSites(transformedData.sites))
-                // Set default selections
-                if (
-                    transformedData.clusters.length > 0 &&
-                    !selectedClusterLocal
-                ) {
-                    dispatch(setSelectedCluster(transformedData.clusters[0].id))
-                    dispatch(setSites(transformedData.clusters[0].sites))
-                    localStorage.setItem(
-                        "selectedCluster",
-                        transformedData.clusters[0].id
-                    )
-                } else {
+                const selectedSiteLocal = localStorage.getItem("selectedSite")
+                const selectedClusterLocal = localStorage.getItem("selectedCluster")
+
+                // Always safe arrays
+                const clusters = transformedData?.clusters || []
+                const sites = transformedData?.sites || []
+
+                dispatch(setClusters(clusters))
+                dispatch(setSites(sites))
+
+                // Set default cluster
+                if (clusters.length > 0 && !selectedClusterLocal) {
+                    dispatch(setSelectedCluster(clusters[0].id))
+                    dispatch(setSites(clusters[0].sites || []))
+                    localStorage.setItem("selectedCluster", clusters[0].id)
+                } else if (selectedClusterLocal) {
                     dispatch(setSelectedCluster(selectedClusterLocal))
                     dispatch(
                         setSites(
-                            transformedData.clusters.find(
-                                (cluster) => cluster.id === selectedClusterLocal
-                            )?.sites || []
+                            clusters.find((c) => c.id === selectedClusterLocal)?.sites || []
                         )
                     )
                 }
-                if (selctedSiteLocal) {
-                    dispatch(setSelectedSite(selctedSiteLocal))
+
+                // Set default site
+                if (selectedSiteLocal) {
+                    dispatch(setSelectedSite(selectedSiteLocal))
                 }
             })
-    }, [dispatch])
+            .catch((err) => {
+                console.error("getSites error:", err)
+            })
+    }, [dispatch, getSites])
+
 
     const handleClusterChange = (clusterId) => {
         dispatch(setSelectedCluster(clusterId))

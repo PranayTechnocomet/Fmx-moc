@@ -26,8 +26,8 @@ import SparesTable from "./moc/SparesTable"
 // import { onChange } from "react-toastify/dist/core/store"
 import CustomerAffected from "./moc/CustomerAffected"
 import DescriptionAttachments from "./moc/DescriptionAttachments"
-import { useMoc } from "@/hooks/useMoc"
-import { useCreateMocFormMutation, useCreateMocMutation, useGetAllDetailsMutation } from "@/redux/api/MocApis"
+import { useCreateMocFormMutation } from "@/redux/api/MocApis"
+import { useSelector } from "react-redux"
 
 // Utility wrapper for input label formatting
 export const InputLabelFormatWrapper = ({ children, label, error, type }) => {
@@ -316,77 +316,6 @@ export const componentMap = {
         )
 
     },
-    // INPUT_BOX: ({ value, onChange, componentProps }) => {
-    //     const [getFormDetails] = useGetFormDetailsMutation();
-    //     const searchParams = useSearchParams();
-    //     const formId = searchParams.get("formId");
-    //     const [userDetail, setUserDetail] = useState(null);
-    //     const isPermitApplicantName = componentProps.displayLable === "Permit Applicant Name";
-
-    //     useEffect(() => {
-    //         const fetchUserDetail = async () => {
-    //             try {
-    //                 const response = await getFormDetails({ formId }).unwrap();
-    //                 const userDetails = response?.userDetails;
-    //                 setUserDetail(userDetails);
-
-    //                 // Auto-fill on first load if field is for Permit Applicant Name
-    //                 if (isPermitApplicantName && userDetails?.name) {
-    //                     onChange(userDetails.name);
-    //                 }
-    //             } catch (error) {
-    //                 console.error("Error fetching user detail:", error);
-    //             }
-    //         };
-
-    //         if (formId) fetchUserDetail();
-    //     }, [formId]);
-
-    //     const handleChange = (e) => {
-    //         const newValue = e.target.value;
-
-    //         if (componentProps?.isNumeric) {
-    //             const numericValue = newValue.replace(/[^0-9]/g, "");
-    //             if (numericValue.length <= 10) {
-    //                 onChange(numericValue);
-    //             }
-    //         } else {
-    //             onChange(newValue);
-    //         }
-    //     };
-
-    //     const fieldValue = value || "";
-
-    // const labelWithAsterisk = (
-    //     <span>
-    //         {componentProps.displayLable}
-    //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-    //     </span>
-    // );
-
-    //     return (
-    //         <InputLabelFormatWrapper
-    //             label={labelWithAsterisk}
-    //             error={componentProps.error}
-    //         >
-    //             <InputField
-    //                 id={componentProps.displayFiledName}
-    //                 className="w-full"
-    //                 type="text"
-    //                 maxLength={componentProps?.maxlength}
-    //                 placeholder={`Enter ${componentProps.displayLable}`}
-    //                 value={fieldValue}
-    //                 onChange={handleChange}
-    //                 onKeyPress={(e) => {
-    //                     if (componentProps?.isNumeric && !/[0-9]/.test(e.key)) {
-    //                         e.preventDefault();
-    //                     }
-    //                 }}
-    //             />
-    //         </InputLabelFormatWrapper>
-    //     );
-    // },
-
     TEXT_AREA: ({ value, onChange, componentProps }) => {
         const labelWithAsterisk = (
             <span>
@@ -649,56 +578,83 @@ export const componentMap = {
             </InputLabelFormatWrapper>
         )
     },
+    // INPUT_SELECT_TIME: ({ value, onChange, componentProps }) => {
+    //     const [duration, setDuration] = useState('')
+    //     const [unit, setUnit] = useState('Hrs')
+    //     const labelWithAsterisk = (
+    //         <span>
+    //             {componentProps.displayLable}
+    //             {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
+    //         </span>
+    //     );
+    //     return (
+    //         <>
+    //             <InputLabelFormatWrapper
+    //                 label={labelWithAsterisk}
+    //                 error={componentProps.error}
+
+    //             >
+    //                 <DropdownInput
+    //                     id={componentProps.displayFiledName}
+    //                     className="w-full flex"
+    //                     type="number"
+    //                     placeholder={componentProps.displayLable}
+    //                     value={duration}
+    //                     // onChange={(e) => setDuration(e.target.value)}
+    //                     onChange={(e) => onChange(e.target.value)}
+    //                     dropdownValue={unit}
+    //                     onDropdownChange={(e) => setUnit(e.target.value)}
+    //                     options={['Hrs', 'Min']}
+    //                 />
+    //             </InputLabelFormatWrapper>
+
+    //         </>
+    //     )
+    // },
     INPUT_SELECT_TIME: ({ value, onChange, componentProps }) => {
-        const [duration, setDuration] = useState('')
-        const [unit, setUnit] = useState('Hrs')
         const labelWithAsterisk = (
             <span>
                 {componentProps.displayLable}
-                {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
+                {componentProps?.mendatory && (
+                    <span className="text-red-500 pl-1">*</span>
+                )}
             </span>
         );
+    
+        // Extract duration & unit from parent value
+        let duration = value?.duration || "";
+        let unit = value?.unit || "Hrs";
+    
         return (
-            <>
-                <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-
-                >
-                    <DropdownInput
-                        id={componentProps.displayFiledName}
-                        className="w-full flex"
-                        type="number"
-                        placeholder={componentProps.displayLable}
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        dropdownValue={unit}
-                        onDropdownChange={(e) => setUnit(e.target.value)}
-                        options={['Hrs', 'Min']}
-                    />
-                </InputLabelFormatWrapper>
-
-            </>
-        )
+            <InputLabelFormatWrapper
+                label={labelWithAsterisk}
+                error={componentProps.error}
+            >
+                <DropdownInput
+                    id={componentProps.displayFiledName}
+                    className="w-full flex"
+                    type="number"
+                    placeholder={componentProps.displayLable}
+                    value={duration}
+                    onChange={(e) =>
+                        onChange({ duration: e.target.value, unit })
+                    }
+                    dropdownValue={unit}
+                    onDropdownChange={(e) =>
+                        onChange({ duration, unit: e.target.value })
+                    }
+                    options={["Hrs", "Min"]}
+                />
+            </InputLabelFormatWrapper>
+        );
     },
+    
     CUSTOM_BLOCK_ASSETS: ({ value, onChange, componentProps }) => (
         <AssetsTable className="shadow-lg rounded-lg" />
     ),
     ATTACHMENT: ({ value, onChange, componentProps }) => {
-        // const labelWithAsterisk = (
-        //     <span>
-        //         {componentProps.displayLable}
-        //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-        //     </span>
-        // );
         return (
             <>
-                {/* <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                /> */}
                 <BulkUpload
                     value={value}
                     onChange={onChange}
@@ -709,20 +665,9 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_OPERATIONAL_COMPLIANCE: ({ value, onChange, componentProps }) => {
-        // const labelWithAsterisk = (
-        //     <span>
-        //         {componentProps.displayLable}
-        //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-        //     </span>
-        // );
+        
         return (
             <>
-                {/* <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                /> */}
                 <OprationDetails
                     value={value}
                     onChange={onChange}
@@ -733,20 +678,9 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_SPARES: ({ value, onChange, componentProps }) => {
-        // const labelWithAsterisk = (
-        //     <span>
-        //         {componentProps.displayLable}
-        //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-        //     </span>
-        // );
+        
         return (
             <>
-                {/* <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                /> */}
                 <SparesTable
                     value={value}
                     onChange={onChange}
@@ -757,20 +691,9 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_CUSTOMER_AFFECTED: ({ value, onChange, componentProps }) => {
-        // const labelWithAsterisk = (
-        //     <span>
-        //         {componentProps.displayLable}
-        //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-        //     </span>
-        // );
+        
         return (
             <>
-                {/* <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                /> */}
                 <CustomerAffected
                     value={value}
                     onChange={onChange}
@@ -782,20 +705,8 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_IMPLEMENTATION: ({ value, onChange, componentProps }) => {
-        // const labelWithAsterisk = (
-        //     <span>
-        //         {componentProps.displayLable}
-        //         {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-        //     </span>
-        // );
         return (
             <>
-                {/* <InputLabelFormatWrapper
-                    label={labelWithAsterisk}
-                    error={componentProps.error}
-                    // mendatory={componentProps.mendatory}
-                    className="mb-1"
-                /> */}
                 <DescriptionAttachments
                     value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
                     onChange={onChange}
@@ -846,10 +757,6 @@ export const componentMap = {
             </>
         )
     },
-
-
-
-
 }
 
 // Context for form data
@@ -880,7 +787,7 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         ...Array(formConfig?.formSteps?.length).fill({})
     ]);
     const [errors, setErrors] = useState([{}])
-    const [createHotoForm] = useCreateHotoFormMutation()
+    // const [createHotoForm] = useCreateHotoFormMutation()
     const [createMocForm] = useCreateMocFormMutation()
 
     const handleInputChange = ({ activeStep, id, value }) => {
@@ -1028,17 +935,26 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     //         }
     //     }
     // };
+    // const {siteId, token} = useSelector((state) => state.auth)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validateStep()) {
             try {
+                // const res = await createMocForm({
+                //     mocConfigId: formConfig?.id,
+                //     mocNo: formConfig?.mocNo,
+                //     mocData: formValues
+                // }).unwrap();
                 const res = await createMocForm({
-                    mocConfigId: formConfig?.id,
+                    // siteId,
+                    // token,
+                    mocConfigId: formConfig?.mocConfigId,
                     mocNo: formConfig?.mocNo,
-                    mocData: formValues
+                    mocFormData: formValues
                 }).unwrap();
+
 
                 console.log("MOC Form API Response:", res);
 
@@ -1059,8 +975,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
 
 
     const stepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents || []
-    console.log('isFormGrid', formConfig?.formSteps?.[activeStep]?.isFormGrid);
-    console.log('mocNo', formConfig?.mocNo);
+    // console.log('isFormGrid', formConfig?.formSteps?.[activeStep]?.isFormGrid);
+    // console.log('mocNo', formConfig?.mocNo);
 
     // Group components by SEPARATORs
     const groupedComponents = []
@@ -1069,7 +985,7 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     stepComponents.forEach((component) => {
         if (component.displayInputElementType === "SEPARATOR") {
             if (currentGroup.length > 0) groupedComponents.push(currentGroup)
-            currentGroup = [component] // Start new group with SEPARATOR
+            currentGroup = [component] 
         } else {
             currentGroup.push(component)
         }
@@ -1125,8 +1041,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                             <div className="text-lg font-bold mb-0">{title}</div>
                             <div className="text-sm font-normal text-gray-600 mb-5">{separator ? "" : description}</div>
 
-                            {/* <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} > */}
-                            <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} >
+                            <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} >
+                            {/* <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} > */}
 
                                 {group.map((component, index) => {
                                     if (component.displayInputElementType === "SEPARATOR") return null;
