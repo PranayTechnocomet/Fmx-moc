@@ -49,7 +49,7 @@
 //                 }
 //             })
 //         }),
-        
+
 //     })
 // })
 
@@ -76,14 +76,14 @@ export const MocApis = baseApi.injectEndpoints({
                 body: { mocConfigId }
             })
         }),
-        
+
         // Get List 
         getList: builder.mutation({
             query: () => ({
                 url: TEST_PREFIX + `/list`,
                 method: "POST"
             }),
-            overrideExisting: true  
+            overrideExisting: true
         }),
 
         // File Upload
@@ -134,21 +134,31 @@ export const MocApis = baseApi.injectEndpoints({
         //         }
         //     })
         // }),
+
+        // createMocForm: builder.mutation({
+        //     query: ({ mocConfigId, mocNo, mocFormData }) => ({
+        //         url: URL_PREFIX + `/moc/create`,
+        //         method: "POST",
+        //         body: {
+        //             mocConfigId,
+        //             mocNo,
+        //             mocFormData
+        //         }
+        //     })
+        // }),
         createMocForm: builder.mutation({
-            query: ({ mocConfigId, mocNo, mocFormData }) => ({
+            query: (formData) => ({
               url: URL_PREFIX + `/moc/create`,
               method: "POST",
-              body: {
-                mocConfigId,
-                mocNo,
-                mocFormData
-              }
-            })
+              body: formData, // direct FormData
+            }),
           }),
           
-        
+          
+
+
     }),
-    overrideExisting: true  
+    overrideExisting: true
 })
 
 export const {
