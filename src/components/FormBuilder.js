@@ -28,6 +28,7 @@ import CustomerAffected from "./moc/CustomerAffected"
 import DescriptionAttachments from "./moc/DescriptionAttachments"
 import { useCreateMocFormMutation } from "@/redux/api/MocApis"
 import { useSelector } from "react-redux"
+import { useMoc } from "@/hooks/useMoc"
 
 // Utility wrapper for input label formatting
 export const InputLabelFormatWrapper = ({ children, label, error, type }) => {
@@ -620,11 +621,11 @@ export const componentMap = {
                 )}
             </span>
         );
-    
+
         // Extract duration & unit from parent value
         let duration = value?.duration || "";
         let unit = value?.unit || "Hrs";
-    
+
         return (
             <InputLabelFormatWrapper
                 label={labelWithAsterisk}
@@ -648,7 +649,7 @@ export const componentMap = {
             </InputLabelFormatWrapper>
         );
     },
-    
+
     CUSTOM_BLOCK_ASSETS: ({ value, onChange, componentProps }) => (
         <AssetsTable className="shadow-lg rounded-lg" />
     ),
@@ -665,7 +666,7 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_OPERATIONAL_COMPLIANCE: ({ value, onChange, componentProps }) => {
-        
+
         return (
             <>
                 <OprationDetails
@@ -678,7 +679,7 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_SPARES: ({ value, onChange, componentProps }) => {
-        
+
         return (
             <>
                 <SparesTable
@@ -691,7 +692,7 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_CUSTOMER_AFFECTED: ({ value, onChange, componentProps }) => {
-        
+
         return (
             <>
                 <CustomerAffected
@@ -937,40 +938,108 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     // };
     // const {siteId, token} = useSelector((state) => state.auth)
 
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     if (validateStep()) {
+    //         try {
+    //             // const res = await createMocForm({
+    //             //     mocConfigId: formConfig?.id,
+    //             //     mocNo: formConfig?.mocNo,
+    //             //     mocData: formValues
+    //             // }).unwrap();
+    //             const res = await createMocForm({
+    //                 // siteId,
+    //                 // token,
+    //                 mocConfigId: formConfig?.mocConfigId,
+    //                 mocNo: formConfig?.mocNo,
+    //                 mocFormData: formValues,
+    //                 files: formValues.attachments || [],
+    //             }).unwrap();
+
+
+    //             console.log("MOC Form API Response:", res);
+
+    //             if (res.success) {
+    //                 toast.success(res.message || "Form submitted successfully");
+    //                 router.push(CM_LISTING);
+    //             } else {
+    //                 toast.error(res.error || res.message || "Submission failed");
+    //             }
+
+    //         } catch (err) {
+    //             console.error("MOC Form Submit Error:", err);
+    //             toast.error(err?.data?.message || err?.message || "Submission failed");
+    //         }
+    //     }
+    // };
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+      
         if (validateStep()) {
-            try {
-                // const res = await createMocForm({
-                //     mocConfigId: formConfig?.id,
-                //     mocNo: formConfig?.mocNo,
-                //     mocData: formValues
-                // }).unwrap();
-                const res = await createMocForm({
-                    // siteId,
-                    // token,
-                    mocConfigId: formConfig?.mocConfigId,
-                    mocNo: formConfig?.mocNo,
-                    mocFormData: formValues
-                }).unwrap();
-
-
-                console.log("MOC Form API Response:", res);
-
-                if (res.success) {
-                    toast.success(res.message || "Form submitted successfully");
-                    router.push(CM_LISTING);
-                } else {
-                    toast.error(res.error || res.message || "Submission failed");
-                }
-
-            } catch (err) {
-                console.error("MOC Form Submit Error:", err);
-                toast.error(err?.data?.message || err?.message || "Submission failed");
+          try {
+            // 🔹 Transform attachments into required format
+            const transformedFiles =
+              (formValues.attachments || []).map((file) => ({
+                fileName: file.name,
+                fileUrl: file.url || URL.createObjectURL(file), // agar upload pachhi URL ave to te use karo
+              }));
+      
+            // 🔹 Inject into mocFormData
+            const updatedFormData = {
+              ...formValues,
+              weiurdecewni5: transformedFiles, // 👈 backend expected field
+            };
+      
+            // 🔹 Call API
+            const res = await createMocForm({
+              mocConfigId: formConfig?.mocConfigId,
+              mocNo: formConfig?.mocNo,
+              mocFormData: updatedFormData,
+            }).unwrap();
+      
+            console.log("MOC Form API Response:", res);
+      
+            if (res.success) {
+              toast.success(res.message || "Form submitted successfully");
+              router.push(CM_LISTING);
+            } else {
+              toast.error(res.error || res.message || "Submission failed");
             }
+          } catch (err) {
+            console.error("MOC Form Submit Error:", err);
+            toast.error(err?.data?.message || err?.message || "Submission failed");
+          }
         }
-    };
+      };
+      
+
+    // const { createMocFormApi } = useMoc();
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault()
+
+    //     if (validateStep()) {
+    //         try {
+    //             const res = await createMocFormApi({
+    //                 mocConfigId: formConfig?.mocConfigId,
+    //                 mocNo: formConfig?.mocNo,
+    //                 mocFormData: formValues,
+    //                 files: formValues.attachments || [],
+    //             })
+
+    //             if (res.success) {
+    //                 router.push(CM_LISTING)
+    //             }
+    //         } catch (err) {
+    //             console.error("MOC Form Submit Error:", err)
+    //         }
+    //     }
+    // }
+
+
+
+
 
 
 
@@ -985,7 +1054,7 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     stepComponents.forEach((component) => {
         if (component.displayInputElementType === "SEPARATOR") {
             if (currentGroup.length > 0) groupedComponents.push(currentGroup)
-            currentGroup = [component] 
+            currentGroup = [component]
         } else {
             currentGroup.push(component)
         }
@@ -1042,7 +1111,7 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                             <div className="text-sm font-normal text-gray-600 mb-5">{separator ? "" : description}</div>
 
                             <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} >
-                            {/* <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} > */}
+                                {/* <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} > */}
 
                                 {group.map((component, index) => {
                                     if (component.displayInputElementType === "SEPARATOR") return null;
