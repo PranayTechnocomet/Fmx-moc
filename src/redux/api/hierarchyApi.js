@@ -24,13 +24,32 @@ export const hierarchyApi = baseApi.injectEndpoints({
                 url: URL_PREFIX + `/user/getMySites`,
                 method: "POST"
             }),
-            transformResponse: (response) => ({
-                clusters: response.data.map((e) => ({
-                    id: e.clusterName,
-                    name: e.clusterName,
-                    ...e
-                }))
-            }),
+            // transformResponse: (response) => ({
+            //     clusters: response.data.map((e) => ({
+            //         id: e.clusterName,
+            //         name: e.clusterName,
+            //         ...e
+            //     }))
+            // }),
+            transformResponse: (response) => {
+                console.log("getSites API response:", response);
+
+                // Ensure we always work with an array
+                const clusters = Array.isArray(response?.data)
+                    ? response.data
+                    : Array.isArray(response)
+                        ? response
+                        : [];
+
+                return {
+                    clusters: clusters.map((e) => ({
+                        id: e.clusterName,
+                        name: e.clusterName,
+                        ...e
+                    })),
+                    sites: clusters.flatMap((c) => c.sites || [])
+                };
+            },
             providesTags: ["Sites"]
         }),
         getAllSites: builder.mutation({
@@ -39,7 +58,9 @@ export const hierarchyApi = baseApi.injectEndpoints({
                 method: "POST"
             })
         }),
-    })
+    }),
+    overrideExisting: true
+
 })
 
 export const {

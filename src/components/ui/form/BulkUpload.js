@@ -119,6 +119,7 @@
 import React, { useState, useEffect } from "react"
 import Button from "../Button"
 import { toast } from "react-toastify"
+import { useMoc } from "@/hooks/useMoc";
 
 // PDF Icon Component
 const PdfIcon = ({ size = 350 }) => (
@@ -143,6 +144,8 @@ const PdfIcon = ({ size = 350 }) => (
 export default function BulkUpload({ value, onChange, componentProps }) {
     const [selectedFile, setSelectedFile] = useState(value || null)
     const [previewUrl, setPreviewUrl] = useState(null)
+    const { fileUpload } = useMoc();
+
 
     // Generate image preview if file is image
     useEffect(() => {
@@ -155,23 +158,58 @@ export default function BulkUpload({ value, onChange, componentProps }) {
         }
     }, [selectedFile])
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0]
+    // const handleFileUpload = (e) => {
+    //     const file = e.target.files[0]
+    //     if (file) {
+    //         const validTypes = [
+    //             "image/jpeg",
+    //             "image/jpg",
+    //             "image/png",
+    //             "application/pdf"
+    //         ]
+    //         if (!validTypes.includes(file.type)) {
+    //             toast.error("Please upload JPG, JPEG, PNG, or PDF")
+    //             return
+    //         }
+    //         setSelectedFile(file)
+    //         onChange?.(file) // send to parent
+    //     }
+    // }
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
         if (file) {
             const validTypes = [
                 "image/jpeg",
                 "image/jpg",
                 "image/png",
                 "application/pdf"
-            ]
+            ];
             if (!validTypes.includes(file.type)) {
-                toast.error("Please upload JPG, JPEG, PNG, or PDF")
-                return
+                toast.error("Please upload JPG, JPEG, PNG, or PDF");
+                return;
             }
-            setSelectedFile(file)
-            onChange?.(file) // send to parent
+
+            try {
+                // UI ma store karo
+                setSelectedFile(file);
+                onChange?.(file); // parent ne pass karo
+
+                // API call karo
+                const response = await fileUpload(file);
+
+                if (response?.success) {
+                    toast.success("File uploaded successfully!");
+                    console.log("Upload Response:", response);
+                } else {
+                    toast.error(response?.message || "File upload failed");
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                toast.error("Something went wrong while uploading the file");
+            }
         }
-    }
+    };
+
 
     const handleCancel = () => {
         setSelectedFile(null)
@@ -217,7 +255,7 @@ export default function BulkUpload({ value, onChange, componentProps }) {
                                 Upload File
                             </h3>
                             <p className="mt-2 text-gray-500 text-sm">
-                            Please upload in JPG, JPEG, PNG, PDF File Format
+                                Please upload in JPG, JPEG, PNG, PDF File Format
                             </p>
                         </div>
                     </>
