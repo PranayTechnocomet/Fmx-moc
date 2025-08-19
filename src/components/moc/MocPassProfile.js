@@ -53,8 +53,8 @@ export default function MocPassProfile() {
     )
     const mocDetails = useSelector((state) => state.moc.mocDetails)
     const [getMocDetails] = useGetMocDetailsMutation()
-    const [loading, setLoading] = useState(false);
-    const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false)
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (!id) return
@@ -150,10 +150,10 @@ export default function MocPassProfile() {
 
                     <div>
                         <div className="font-bold text-xl">
-                            {currentPass.requestType}
+                            {mocDetails?.detailHeader?.title}
                         </div>
                         <div className="text-gray-500">
-                            {currentPass.requestId}
+                            {mocDetails?.detailHeader?.mocNo}
                         </div>
                     </div>
 
@@ -167,15 +167,25 @@ export default function MocPassProfile() {
 
                 {/* Meta Info */}
                 <div className="grid grid-cols-3 gap-7 mb-4 text-md">
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">
-                            Change Request Type:
-                        </div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.requestType}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
+                    {mocDetails?.detailHeader?.formData.map((item, index) =>
+                        Object.entries(item)
+                            .filter(([key]) => key !== "required") // 👈 remove required
+                            .map(([key, value], subIndex) => (
+                                <div
+                                    className="grid grid-cols-12 gap-4"
+                                    key={`moc-header-${index}-${subIndex}`}
+                                >
+                                    <div className="col-span-6 text-gray-500">
+                                        {key}
+                                    </div>
+                                    <span className="col-span-6 font-medium">
+                                        {String(value)}
+                                    </span>
+                                </div>
+                            ))
+                    )}
+
+                    {/* <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-6 text-gray-500">Region:</div>
                         <span className="col-span-6 font-medium">
                             {currentPass.region}
@@ -210,7 +220,7 @@ export default function MocPassProfile() {
                         <span className="col-span-6 font-medium">
                             {currentPass.createdBy}
                         </span>
-                    </div>
+                    </div> */}
                 </div>
             </Card>
 
