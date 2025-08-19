@@ -16,7 +16,7 @@ import Modal from "../ui/overlays/Modal"
 import StatusPill from "../ui/StatusPill"
 import StatusCard from "../ui/StatusCard"
 import Button from "../ui/Button"
-import { RETURNED_STATUS } from "@/utils/constants"
+import { CM_LIST_STATUSES, RETURNED_STATUS } from "@/utils/constants"
 import { useSelector } from "react-redux"
 import Switch from "../ui/form/Switch"
 import MultiSelect from "../ui/form/MultiSelect"
@@ -69,19 +69,23 @@ const CmListning = () => {
     const [columnList, setColumnList] = useState([])
     const [data, setData] = useState([])
     const [rowList, setRowList] = useState([])
+    const [counts, setCounts] = useState([])
     const [totalPages, setTotalPages] = useState(0)
     const [paginatedData, setPaginatedData] = useState([])
 
     const [currentPage, setCurrentPage] = useState(1)
     const [recordsPerPage, setRecordsPerPage] = useState(10)
-    const [actionModalIndex, setActionModalIndex] = useState(null)
+    const [actionModalIndex, setActionModalIndex] = useState(null);
+    const { selectedSite, clusters } = useHierarchy();
+    const [sites, setSites] = useState([])
+    const router = useRouter()
 
 
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 10
     })
-    const [filters, setFilters] = useState({
+    const initialFilter = {
         from_date: "",
         to_date: "",
         complex: "",
@@ -91,7 +95,9 @@ const CmListning = () => {
         status: "",
         search: "",
         column: ""
-    })
+    }
+    const [filters, setFilters] = useState(initialFilter)
+    console.log("clusters", clusters)
 
     // const columns = getColumns(showReturnAllColumn)
     const columns = getColumns(columnList)
@@ -118,27 +124,61 @@ const CmListning = () => {
     const handleFileChange = (event) => {
         setFilters({ ...filters })
     }
-    const { selectedSite } = useHierarchy()
 
+    const fetchList = async () => {
+        const response = await getCmList(filters)
+        console.log("response", response)
+        setData(response.data)
+        setColumnList(response.data?.mocColumnsList)
+        setRowList(response.data?.data)
+        setCounts(response.data?.counts)
+        setTotalPages(
+            Math.ceil(response.data?.data?.length / recordsPerPage)
+        )
+        setPaginatedData(
+            response.data?.data.slice(
+                (currentPage - 1) * recordsPerPage,
+                currentPage * recordsPerPage
+            )
+        )
+    }
     useEffect(() => {
-        const fetchList = async () => {
-            const response = await getCmList()
-            console.log("response", response)
-            setData(response.data)
-            setColumnList(response.data?.mocColumnsList)
-            setRowList(response.data?.data)
-            setTotalPages(
-                Math.ceil(response.data?.data?.length / recordsPerPage)
-            )
-            setPaginatedData(
-                response.data?.data.slice(
-                    (currentPage - 1) * recordsPerPage,
-                    currentPage * recordsPerPage
-                )
-            )
-        }
         fetchList()
-    }, [selectedSite])
+    }, [selectedSite, filters.status])
+
+    const handleApplyFilter = () => {
+        fetchList()
+    }
+
+    const handleClusterChange = (selectedOptions) => {
+        // If no options are selected, reset sites and return
+        if (!selectedOptions || selectedOptions.length === 0) {
+            setFilters({ ...filters, complex: [] });
+            setSites([]);
+            return;
+        }
+    
+        // Update filters with the new selected values
+        setFilters({ ...filters, complex: selectedOptions });
+    
+        // Extract selected cluster IDs
+        const selectedClusterIds = selectedOptions.map(option => option.value);
+        
+        // Filter clusters based on selected IDs
+        const matchingClusters = clusters.filter(cluster => 
+            selectedClusterIds.includes(cluster.id)
+        );
+        
+        // Update sites with the matching clusters
+        setSites(matchingClusters);
+        
+        console.log("selectedOptions", selectedOptions);
+        console.log("matchingClusters", matchingClusters);
+    }
+
+    const handleSiteChange = (value) => {
+        setFilters({ ...filters, site: value })
+    }
 
     const generatePageNumbers = () => {
         const pages = []
@@ -171,6 +211,12 @@ const CmListning = () => {
     }
 
     console.log("filters", filters)
+    console.log("sites", sites)
+
+    const handleViewDetails = (row) => {
+        console.log("row", row)
+        router.push(`/createChangeRequest/cm-listing/${row.mocId}`)
+    }
 
     return (
         <>
@@ -183,22 +229,15 @@ const CmListning = () => {
                     <MultiSelect
                         selectStyle=" h-12 "
                         className="!w-2/12"
-                        options={[
-                            { label: "Asset Type", value: "Asset Type" },
-                            { label: "Asset Name", value: "Asset Name" },
-                            { label: "Model", value: "Model" },
-                            { label: "HSN Code", value: "HSN Code" },
-                            { label: "Service Tag", value: "Service Tag" },
-                            { label: "Description", value: "Description" },
-                            { label: "Remarks", value: "Remarks" },
-                            { label: "Value", value: "Value" },
-                            { label: "Quantity", value: "Quantity" },
-                            { label: "Attachment", value: "Attachment" },
-                            { label: "Status", value: "Status" }
-                        ]}
+                        options={clusters.map((cluster) => ({
+                            label: cluster.name,
+                            value: cluster.id
+                        }))}
                         value={filters.complex}
                         onChange={(value) =>
-                            setFilters({ ...filters, complex: value })
+                            {
+                                handleClusterChange(value)
+                            }
                         }
                         placeholder={"Complex"}
                     />
@@ -206,22 +245,13 @@ const CmListning = () => {
                     <MultiSelect
                         selectStyle=" h-12 "
                         className="!w-2/12"
-                        options={[
-                            { label: "Asset Type", value: "Asset Type" },
-                            { label: "Asset Name", value: "Asset Name" },
-                            { label: "Model", value: "Model" },
-                            { label: "HSN Code", value: "HSN Code" },
-                            { label: "Service Tag", value: "Service Tag" },
-                            { label: "Description", value: "Description" },
-                            { label: "Remarks", value: "Remarks" },
-                            { label: "Value", value: "Value" },
-                            { label: "Quantity", value: "Quantity" },
-                            { label: "Attachment", value: "Attachment" },
-                            { label: "Status", value: "Status" }
-                        ]}
-                        value={filters.building}
+                        options={sites.map((site) => ({
+                            label: site.name,
+                            value: site.id
+                        }))}
+                        value={filters.site}
                         onChange={(value) =>
-                            setFilters({ ...filters, building: value })
+                            setFilters({ ...filters, site: value })
                         }
                         placeholder={"Building"}
                     />
@@ -249,7 +279,7 @@ const CmListning = () => {
                         }
                         placeholder={"To Date*"}
                     />
-                    <SingleSelect
+                    {/* <SingleSelect
                         selectStyle=" h-12 "
                         className="!w-2/12"
                         options={[
@@ -261,119 +291,44 @@ const CmListning = () => {
                             setFilters({ ...filters, site: value })
                         }
                         placeholder={"Today"}
-                    />
+                    /> */}
                     <Button
                         variant="transparent"
                         className={`border-0`}
+                        onClick={() => setFilters(initialFilter)}
                     >
                         Reset
                     </Button>
                     <Button
                         variant="secondary"
                         className={`text-nowrap`}
+                        onClick={handleApplyFilter}
                     >
                         Apply Filter
                     </Button>
                 </div>
                 <div className="flex gap-x-3 my-2.5 ">
-                    {[
-                        {
-                            status: "Total",
-                            color: "bg-primary-100",
-                            text: "text-primary-100"
-                        },
-                        {
-                            status: "My Approval Pending",
-                            color: "bg-orange-500",
-                            text: "text-orange-500"
-                        },
-                        {
-                            status: "Approval Pending",
-                            color: "bg-yellow-600",
-                            text: "text-yellow-600"
-                        },
-                        {
-                            status: "Rejected",
-                            color: "bg-red-600",
-                            text: "text-red-600"
-                        },
-                        {
-                            status: "Return Pending",
-                            color: "bg-sky-500",
-                            text: "text-sky-500"
-                        },
-                        {
-                            status: "Closed",
-                            color: "bg-gray-400",
-                            text: "text-gray-400"
-                        },
-                        {
-                            status: "Draft",
-                            color: "bg-teal-800",
-                            text: "text-teal-800"
-                        },
+                    {Object.entries(counts).map(([key, number]) => {
+                        const statusConfig = Object.values(
+                            CM_LIST_STATUSES
+                        ).find((s) => s.key === key)
 
-                        {
-                            status: "Overdue",
-                            color: "bg-red-900",
-                            text: "text-red-900"
-                        }
-                    ].map(({ color, text, status }) => {
-                        let number = 0
-                        if (status === "Total") {
-                            number = rowList.length
-                        } else if (status === "Returned") {
-                            number = rowList?.filter(
-                                (d) => d.status === RETURNED_STATUS.RETURNED
-                            ).length
-                        } else if (status === "My Approval Pending") {
-                            number = rowList?.filter(
-                                (d) =>
-                                    d.status ===
-                                    RETURNED_STATUS.MY_APPROVAL_PENDING
-                            ).length
-                        } else if (status === "Approval  Pending") {
-                            number = rowList?.filter(
-                                (d) =>
-                                    d.status ===
-                                    RETURNED_STATUS.APPROVAL_PENDING
-                            ).length
-                        } else if (status === "Rejected") {
-                            number = rowList?.filter(
-                                (d) => d.status === RETURNED_STATUS.REJECTED
-                            ).length
-                        } else if (status === "Return Pending") {
-                            number = rowList?.filter(
-                                (d) =>
-                                    d.status === RETURNED_STATUS.RETURN_PENDING
-                            ).length
-                        } else if (status === "Closed") {
-                            number = rowList.filter(
-                                (d) => d.status === RETURNED_STATUS.CLOSED
-                            ).length
-                        } else if (status === "Draft") {
-                            number = rowList.filter(
-                                (d) => d.status === RETURNED_STATUS.DRAFT
-                            ).length
-                        } else if (status === "Overdue") {
-                            number = rowList.filter(
-                                (d) => d.status === RETURNED_STATUS.OVERDUE
-                            ).length
-                        }
+                        if (!statusConfig) return null // skip if not defined in enum
+
                         return (
                             <StatusCard
-                                key={status}
-                                title={status}
+                                key={statusConfig.key}
+                                title={statusConfig.status}
                                 number={number}
                                 onClick={() => {
                                     setFilters({
                                         ...filters,
-                                        status: status
+                                        status: statusConfig.key
                                     })
                                 }}
-                                strip_color={color}
-                                title_color={text}
-                                cardStyles="h-22 hover:!scale-100 transition-transform"
+                                strip_color={statusConfig.color}
+                                title_color={statusConfig.text}
+                                cardStyles="h-22 hover:scale-[1.05] transition-transform"
                             />
                         )
                     })}
@@ -400,29 +355,6 @@ const CmListning = () => {
                         }
                     />
 
-                    <InputField
-                        type="date"
-                        inputContainerStyle="h-12"
-                        className=" !w-2/12"
-                        value={filters.from_date}
-                        onChange={(e) =>
-                            setFilters({
-                                ...filters,
-                                from_date: e.target.value
-                            })
-                        }
-                        placeholder={"From Date*"}
-                    />
-                    <InputField
-                        type="date"
-                        className=" !w-2/12"
-                        inputContainerStyle="h-12"
-                        value={filters.to_date}
-                        onChange={(e) =>
-                            setFilters({ ...filters, to_date: e.target.value })
-                        }
-                        placeholder={"To Date*"}
-                    />
                     <SingleSelect
                         selectStyle=" h-12 "
                         className="!w-2/12"
@@ -483,7 +415,7 @@ const CmListning = () => {
                                 key={rowIndex}
                                 className="border-b border-slate-100 bg-white hover:bg-gray-100 cursor-pointer"
                             >
-                                {columnList.map((col, colIndex) =>
+                                {columnList.map((col, colIndex) => (
                                     <RenderTableRow
                                         row={row}
                                         col={col}
@@ -492,9 +424,12 @@ const CmListning = () => {
                                         currentPage={currentPage}
                                         recordsPerPage={recordsPerPage}
                                         actionModalIndex={actionModalIndex}
-                                        setActionModalIndex={setActionModalIndex}
+                                        setActionModalIndex={
+                                            setActionModalIndex
+                                        }
+                                        handleViewDetails={handleViewDetails}
                                     />
-                                )}
+                                ))}
                             </tr>
                         ))}
                     </tbody>

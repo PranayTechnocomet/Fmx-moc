@@ -248,3 +248,68 @@ export const PRIMITIVE_INPUTS = [
     "INPUT_BOX",
     "DATE_TIME"
 ]
+
+export const CM_LIST_STATUSES = {
+    Total: {
+        key: "total",
+        status: "Total",
+        color: "bg-primary-100",
+        text: "text-primary-100"
+    },
+    MyApprovalPending: {
+        key: "myApprovalPending",
+        status: "My Approval Pending",
+        color: "bg-orange-500",
+        text: "text-orange-500"
+    },
+    ApprovalPending: {
+        key: "approvalPending",
+        status: "Approval Pending",
+        color: "bg-yellow-600",
+        text: "text-yellow-600"
+    },
+    Approved: {
+        key: "approved",
+        status: "Approved",
+        color: "bg-green-600",
+        text: "text-green-600"
+    },
+    Rejected: {
+        key: "rejected",
+        status: "Rejected",
+        color: "bg-red-600",
+        text: "text-red-600"
+    },
+    ReturnPending: {
+        key: "returnPending",
+        status: "Return Pending",
+        color: "bg-sky-500",
+        text: "text-sky-500"
+    },
+    Closed: {
+        key: "closed",
+        status: "Closed",
+        color: "bg-gray-400",
+        text: "text-gray-400"
+    },
+    Draft: {
+        key: "draft",
+        status: "Draft",
+        color: "bg-teal-800",
+        text: "text-teal-800"
+    },
+
+    Overdue: {
+        key: "overdue",
+        status: "Overdue",
+        color: "bg-red-900",
+        text: "text-red-900"
+    },
+
+    Other: {
+        key: "other",
+        status: "Other",
+        color: "bg-lime-500",
+        text: "text-lime-500"
+    }
+}

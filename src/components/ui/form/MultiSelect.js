@@ -22,6 +22,7 @@ export default function MultiSelect({
             )
         }
     }, [value])
+console.log("selectedOptions", selectedOptions);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
