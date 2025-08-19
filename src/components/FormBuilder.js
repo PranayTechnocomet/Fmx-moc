@@ -938,25 +938,66 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     // };
     // const {siteId, token} = useSelector((state) => state.auth)
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (validateStep()) {
+            try {
+                // const res = await createMocForm({
+                //     mocConfigId: formConfig?.id,
+                //     mocNo: formConfig?.mocNo,
+                //     mocData: formValues
+                // }).unwrap();
+                const res = await createMocForm({
+                    // siteId,
+                    // token,
+                    mocConfigId: formConfig?.mocConfigId,
+                    mocNo: formConfig?.mocNo,
+                    mocFormData: formValues,
+                    files: formValues.attachments || [],
+                }).unwrap();
+
+
+                console.log("MOC Form API Response:", res.mocFormData);
+
+                if (res.success) {
+                    toast.success(res.message || "Form submitted successfully");
+                    router.push(CM_LISTING);
+                } else {
+                    toast.error(res.error || res.message || "Submission failed");
+                }
+
+            } catch (err) {
+                console.error("MOC Form Submit Error:", err);
+                toast.error(err?.data?.message || err?.message || "Submission failed");
+            }
+        }
+    };
+
     // const handleSubmit = async (e) => {
     //     e.preventDefault();
 
     //     if (validateStep()) {
     //         try {
-    //             // const res = await createMocForm({
-    //             //     mocConfigId: formConfig?.id,
-    //             //     mocNo: formConfig?.mocNo,
-    //             //     mocData: formValues
-    //             // }).unwrap();
+    //             // 🔹 Transform attachments into required format
+    //             const transformedFiles =
+    //                 (formValues.attachments || []).map((file) => ({
+    //                     fileName: file.name,
+    //                     fileUrl: file.url || URL.createObjectURL(file), // agar upload pachhi URL ave to te use karo
+    //                 }));
+
+    //             // 🔹 Inject into mocFormData
+    //             const updatedFormData = {
+    //                 ...formValues,
+    //                 weiurdecewni5: transformedFiles, // 👈 backend expected field
+    //             };
+
+    //             // 🔹 Call API
     //             const res = await createMocForm({
-    //                 // siteId,
-    //                 // token,
     //                 mocConfigId: formConfig?.mocConfigId,
     //                 mocNo: formConfig?.mocNo,
-    //                 mocFormData: formValues,
-    //                 files: formValues.attachments || [],
+    //                 mocFormData: updatedFormData,
     //             }).unwrap();
-
 
     //             console.log("MOC Form API Response:", res);
 
@@ -966,53 +1007,13 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
     //             } else {
     //                 toast.error(res.error || res.message || "Submission failed");
     //             }
-
     //         } catch (err) {
     //             console.error("MOC Form Submit Error:", err);
     //             toast.error(err?.data?.message || err?.message || "Submission failed");
     //         }
     //     }
     // };
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-      
-        if (validateStep()) {
-          try {
-            // 🔹 Transform attachments into required format
-            const transformedFiles =
-              (formValues.attachments || []).map((file) => ({
-                fileName: file.name,
-                fileUrl: file.url || URL.createObjectURL(file), // agar upload pachhi URL ave to te use karo
-              }));
-      
-            // 🔹 Inject into mocFormData
-            const updatedFormData = {
-              ...formValues,
-              weiurdecewni5: transformedFiles, // 👈 backend expected field
-            };
-      
-            // 🔹 Call API
-            const res = await createMocForm({
-              mocConfigId: formConfig?.mocConfigId,
-              mocNo: formConfig?.mocNo,
-              mocFormData: updatedFormData,
-            }).unwrap();
-      
-            console.log("MOC Form API Response:", res);
-      
-            if (res.success) {
-              toast.success(res.message || "Form submitted successfully");
-              router.push(CM_LISTING);
-            } else {
-              toast.error(res.error || res.message || "Submission failed");
-            }
-          } catch (err) {
-            console.error("MOC Form Submit Error:", err);
-            toast.error(err?.data?.message || err?.message || "Submission failed");
-          }
-        }
-      };
-      
+
 
     // const { createMocFormApi } = useMoc();
 
