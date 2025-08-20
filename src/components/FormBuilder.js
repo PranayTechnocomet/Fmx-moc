@@ -918,14 +918,14 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
                 };
                 console.log("MOC Form API Payload:", payload);
 
-                // const res = await createMocForm(payload).unwrap();
+                const res = await createMocForm(payload).unwrap();
 
-                // if (res.success) {
-                //     toast.success(res.message || "Form submitted successfully");
-                //     router.push(CM_LISTING);
-                // } else {
-                //     toast.error(res.error || res.message || "Submission failed");
-                // }
+                if (res.success) {
+                    toast.success(res.message || "Form submitted successfully");
+                    router.push(CM_LISTING);
+                } else {
+                    toast.error(res.error || res.message || "Submission failed");
+                }
             } catch (err) {
                 console.error("MOC Form Submit Error:", err);
                 toast.error(err?.data?.message || err?.message || "Submission failed");

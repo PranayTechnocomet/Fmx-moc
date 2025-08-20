@@ -23,6 +23,8 @@ export const RenderTableRow = ({
 
     // Date Column
     if (col.type === "date" && row.mocFormData[0][col.key]) {
+    console.log("row.mocFormData[0][col.key]", row.mocFormData[0][col.key]);
+    
         cellValue = new Intl.DateTimeFormat("en-IN", {
             day: "2-digit",
             month: "short",

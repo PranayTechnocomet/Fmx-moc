@@ -19,8 +19,8 @@ const tabList = ["Details", "Approvals", "Updates", "Logs"]
 const getStatusConfig = (statusText) => {
     return (
         {
-            style: CM_LIST_MAIN_STATUS[statusText].color,
-            label: CM_LIST_MAIN_STATUS[statusText].text
+            style: CM_LIST_MAIN_STATUS[statusText]?.color,
+            label: CM_LIST_MAIN_STATUS[statusText]?.text
         } || {
             style: "text-gray-600 bg-gray-50",
             label: statusText || "Unknown"

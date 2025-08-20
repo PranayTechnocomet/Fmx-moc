@@ -96,66 +96,80 @@ const Steper = ({ steps, activeStep }) => {
         const isCABStep = step.title.toLowerCase().includes('cab approval');
 
         return (
-          <div key={index} className="relative flex items-start pb-6">
+          <div key={index} className="relative  flex items-start pb-6">
             {/* Connector line */}
             {index !== steps.length - 1 && (
               <span
-                className={`absolute left-[10px] top-[18px] h-full w-[2px] ${
-                  index < activeStep ? 'bg-gray-500' : 'bg-gray-400'
+                className={`absolute left-[10px] top-[18px] h-full w-[2.5px] flex flex-col items-center ${
+                  index < activeStep ? 'bg-gray-600' : 'bg-gray-600'
                 } z-0`}
               ></span>
             )}
 
             {/* Status Icon */}
-            <div className="relative z-10">
+            <div className="relative z-10 right-1 ">
               {status === 'completed' &&
                 (step.parent ? (
-                  <Check className="w-6 h-6 text-white bg-[#12B690] rounded-full p-1" />
+                  <Check className="w-8 h-8 text-white bg-[#12B690] rounded-full p-1" />
                 ) : (
-                  <Dot className="w-5 h-5 text-[#12B690]" />
+                  <Dot className="w-6 h-6 text-[#12B690]" />              
                 ))}
 
               {status === 'active' &&
                 (step.parent ? (
-                  // <Circle className="w-4 h-4 text-blue-600 fill-blue-100" />
-                  <Dot className="w-5 h-5 text-gray-400 flex items-center justify-center" />
+                  <Circle className="w-10 h-10 text-blue-800 fill-blue-100" />
+                  // <Dot className="w-6 h-6 text-gray-400 flex items-center justify-center" />
+                  
+                  
                 ) : (
-                  <Dot className="w-5 h-5 text-blue-600" />
+                  <Dot className="w-7 h-7 text-blue-600" />
+                 
                 ))}
 
               {status === 'pending' &&
                 (step.parent ? (
-                  <Dot className="w-5 h-5 text-gray-400 flex items-center justify-center" />
+                 <Dot className="w-7 h-7 text-gray-400 flex items-center justify-center" />
+                  
                 ) : (
-                  <Dot className="w-5 h-5 text-gray-400" />
+                <Dot className="w-7 h-7 text-gray-400" />
+
                 ))}
 
               {status === 'closed' && (
-                <X className="w-6 h-6 text-white bg-red-500 rounded-full p-1" />
+                <X className="w-7 h-7 text-white bg-red-500 rounded-full p-1" />
                
               )}
             </div>
 
             {/* Step Text */}
-            <div className="ml-4 flex items-center gap-2 w-full">
-              <span
-                className={`${step.parent ? 'text-base' : 'text-sm'} flex items-center ${
+          <div className=" flex items-center gap-1 w-full">
+            <div
+              className={`flex items-center justify-between w-full
+                ${step.parent ? 'text-base' : ''}
+                ${
                   status === 'completed'
                     ? 'text-gray-900 font-medium'
                     : status === 'active'
-                    ? 'text-blue-600 bg-blue-50 px-2 py-1 rounded-lg font-medium flex-1'
+                    ? 'text-blue-600 bg-blue-50 rounded-lg font-medium h-10 w-full px-4'
                     : status === 'pending'
                     ? 'text-gray-400 font-medium'
                     : 'text-red-500 font-medium'
                 }`}
-              >
-                {step.title}
-              {/* Show right icon only if active and NOT CAB Approval */}
+            >
+              {/* Step Title */}
+              <span>{step.title}</span>
+
+              {/* Right Arrow only for active and NOT CAB Approval */}
               {status === 'active' && !isCABStep && (
-                <ChevronRight className="w-4 h-4 text-blue-600 ml-auto" />
+                <ChevronRight className="w-7 h-7 text-blue-600" />
               )}
-              </span>
+
+              {/* If CAB step active -> show arrow inside highlight box */}
+              {status === 'active' && isCABStep && (
+                <ChevronRight className="w-7 h-7 text-blue-600" />
+              )}
             </div>
+          </div>
           </div>
         );
       })}
