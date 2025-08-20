@@ -25,7 +25,7 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                 toast.success("File uploaded successfully");
 
                 const uploadedFile = {
-                      id,
+                    // id,
                     fileName: file.name,
                     fileUrl: response.data.url,
                     fileType: file.type,
@@ -33,9 +33,8 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                 };
 
                 const updated = (value || []).map((att) =>
-                  att.id === id ? { ...att, ...uploadedFile } : att
+                    att.id === id ? { ...att, attachment: uploadedFile } : att
                 );
-
 
                 onChange(updated);
             } else {
@@ -49,43 +48,6 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
         }
     };
 
-    // const handleFileChange = async ({ activeStep, id, file }) => {
-    //   if (!file) return;
-
-    //   setLoading(true);
-    //   try {
-    //     const response = await fileUpload(file);
-
-    //     if (response?.success && response?.data?.url) {
-    //       toast.success("File uploaded successfully");
-
-    //       const uploadedFile = {
-    //         url: response.data.url,
-    //         fileName: file.name,
-    //         fileType: file.type,
-    //         fileSizeMB: (file.size / (1024 * 1024)).toFixed(2)
-    //       };
-
-    //       // 🔑 update inside formValues for current step
-    //       setFormValues((prev) => {
-    //         const newValues = [...prev];
-    //         newValues[activeStep] = {
-    //           ...(prev[activeStep] || {}),
-    //           [id]: uploadedFile
-    //         };
-    //         return newValues;
-    //       });
-    //     } else {
-    //       toast.error(response?.message || "File upload failed");
-    //     }
-    //   } catch (err) {
-    //     console.error("File upload failed:", err);
-    //     toast.error(err.message || "File upload failed");
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
     // --- Add Step ---
     const handleAddAttachment = () => {
         const newAttachment = {
@@ -97,7 +59,7 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                 fileType: "",
             }
         };
-        onChange([...(value || []), newAttachment]);
+        onChange([...value, newAttachment]);
     };
 
     // --- Remove Step ---
@@ -122,7 +84,7 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                 </thead>
                 <tbody>
                     {(value || []).map((file, index) => (
-                        <tr key={file.id}>
+                        <tr key={file.id || index}>
                             <td className="p-2">{(index + 1).toString().padStart(2, "0")}</td>
 
                             {/* --- Description --- */}
@@ -148,12 +110,12 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <Paperclip size={18} className="text-gray-400 rotate-45" />
                                         <span className="py-2 block truncate">
-                                            {file?.fileName
-                                                ? file.fileName.length > 25
-                                                    ? `${file.fileName.slice(0, 15)}...${file.fileName.slice(
+                                            {file?.attachment?.fileName
+                                                ? file.attachment.fileName.length > 25
+                                                    ? `${file.attachment.fileName.slice(0, 15)}...${file.attachment.fileName.slice(
                                                         -3
                                                     )}`
-                                                    : file.fileName
+                                                    : file.attachment.fileName
                                                 : "Attachment"}
                                         </span>
                                         <input
@@ -170,16 +132,16 @@ const DescriptionAttachments = ({ value = [], onChange }) => {
                                     </label>
 
                                     {/* Preview Thumbnail */}
-                                    {file.fileUrl && (
+                                    {file.attachment?.fileUrl && (
                                         <div
                                             className="ml-auto h-9 w-10 bg-black rounded overflow-hidden cursor-pointer"
                                             onClick={() =>
-                                                setPreviewModal({ open: true, file })
+                                                setPreviewModal({ open: true, file: file.attachment })
                                             }
                                         >
-                                            {file.fileType?.startsWith("image/") ? (
+                                            {file.attachment.fileType?.startsWith("image/") ? (
                                                 <img
-                                                    src={file.fileUrl}
+                                                    src={file.attachment.fileUrl}
                                                     alt="preview"
                                                     className="h-full w-full object-cover"
                                                     width={40}

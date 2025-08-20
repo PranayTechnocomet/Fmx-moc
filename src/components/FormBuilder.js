@@ -104,37 +104,105 @@ const CustomUserSearch = ({ options, onSelect, placeholder }) => {
 
 // Simplified component map without react-hook-form
 export const componentMap = {
-    DATE_TIME: ({ value, onChange, componentProps }) => {
-        const now = new Date()
-        const tzOffset = now.getTimezoneOffset() * 60000 // offset in milliseconds
-        const localISO = new Date(now - tzOffset).toISOString().slice(0, 16)
-        useEffect(() => {
-            onChange(localISO)
-        }, [])
 
+    // DATE_TIME: ({ value, onChange, componentProps }) => {
+    //     const now = new Date()
+    //     const tzOffset = now.getTimezoneOffset() * 60000 // offset in milliseconds
+    //     const localISO = new Date(now - tzOffset).toISOString().slice(0, 16)
+    //     useEffect(() => {
+    //         onChange(localISO)
+    //     }, [])
+
+    //     const labelWithAsterisk = (
+    //         <span>
+    //             {componentProps.displayLable}
+    //             {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
+    //         </span>
+    //     );
+
+    //     const fieldValue = value || ""
+
+    //     const formatToDDMMYYYYWithTime = (date) => {
+    //         const month = date.toLocaleString('default', { month: 'short' });
+    //         const day = date.getDate();
+    //         const year = date.getFullYear().toString().slice(-2);
+    //         // const hour = date.getHours();
+    //         // const amPm = hour >= 12 ? 'PM' : 'AM';
+    //         // const hours = hour % 12 || 12;
+    //         // const minutes = date.getMinutes().toString().padStart(2, '0');
+    //         return `${day} ${month}, ${year}`;
+    //     }
+    //     return (
+    //         <InputLabelFormatWrapper
+    //             label={labelWithAsterisk}
+    //             error={componentProps.error}
+    //         >
+    //             {/* <InputField
+    //                 id={componentProps.displayFiledName}
+    //                 className="w-full"
+    //                 type="date"
+    //                 placeholder={labelWithAsterisk}
+    //                 // value={value || ""}
+    //                 value={formatToDDMMYYYYWithTime(new Date(value)) || ""}
+    //                 // disabled
+    //                 onChange={(e) => onChange(e.target.value)}
+    //             /> */}
+    //         </InputLabelFormatWrapper>
+    //     )
+    // },
+    DATE_TIME: ({ value, onChange, componentProps }) => {
+        const now = new Date();
+        const tzOffset = now.getTimezoneOffset() * 60000; 
+        const localISO = new Date(now - tzOffset).toISOString().slice(0, 10); // YYYY-MM-DD
+    
+        useEffect(() => {
+            if (!value) {
+                onChange(localISO);
+            }
+        }, []);
+    
         const labelWithAsterisk = (
             <span>
                 {componentProps.displayLable}
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
+    
+        // Formatter (for display)
+        const formatToDDMMYYYYWithTime = (dateStr) => {
+            if (!dateStr) return "";
+            const date = new Date(dateStr);
+            const month = date.toLocaleString("default", { month: "short" }); // Jul
+            const day = date.getDate(); // 14
+            const year = date.getFullYear().toString().slice(-2); // 25
+            return `${day} ${month}, ${year}`;
+        };
+    
+        const fieldValue = value || localISO ;
+    
         return (
             <InputLabelFormatWrapper
                 label={labelWithAsterisk}
                 error={componentProps.error}
             >
-                <InputField
-                    id={componentProps.displayFiledName}
-                    className="w-full"
-                    type="datetime-local"
-                    placeholder={labelWithAsterisk}
-                    value={value || ""}
-                    // disabled
-                    onChange={(e) => onChange(e.target.value)}
-                />
+                <div className="flex gap-2">
+                    {/* Actual date input */}
+                    <DefaultFieldSetInput
+                        label={labelWithAsterisk}
+                        type="date"
+                        placeholder="Select Date"
+                        required
+                        icon={CalendarDays}
+                        value={fieldValue} // Always keep YYYY-MM-DD
+                        className="w-full border border-gray-300 rounded outline-none focus:outline-none text-gray-600"
+                        onChange={(e) => onChange(e.target.value)}
+                    />
+                </div>
+    
+                
             </InputLabelFormatWrapper>
-        )
-    },
+        );
+    },    
     FROM_TO_DATE_TIME: ({ value, onChange, componentProps }) => {
         const fieldValue = value || ""
 
@@ -146,16 +214,10 @@ export const componentMap = {
         );
         return (
             <div className="flex items-center gap-4 mb-4 justify-between">
-                {/* Label on Left */}
-                {/* <label className="w-1/3 font-medium text-gray-700">
-                           {componentProps.displayLable}
-                           {componentProps.mendatory && <span className="text-red-500">*</span>}
-                       </label> */}
                 <InputLabelFormatWrapper label={labelWithAsterisk}
                     error={componentProps.error}
                     mendatory={componentProps.mendatory && <span className="text-red-500">*</span>}
                 >
-
                     {/* Date Inputs on Right */}
                     <div className="flex gap-2 ">
                         <DefaultFieldSetInput
@@ -205,7 +267,7 @@ export const componentMap = {
 
         const handleChange = (date) => {
             setSelectedDate(date);
-            onChange(formatToYYYYMMDD(date)); // Keep backend value consistent
+            onChange(formatToYYYYMMDD(date));
         };
 
         const labelWithAsterisk = (
@@ -238,7 +300,7 @@ export const componentMap = {
         useEffect(() => {
             const now = new Date();
             setSelectedTime(now);
-            onChange(formatTimeTo24(now)); // Send HH:mm format
+            onChange(formatTimeTo24(now));
         }, []);
 
         const formatTimeTo24 = (date) => {
@@ -585,39 +647,6 @@ export const componentMap = {
             </InputLabelFormatWrapper>
         )
     },
-    // INPUT_SELECT_TIME: ({ value, onChange, componentProps }) => {
-    //     const [duration, setDuration] = useState('')
-    //     const [unit, setUnit] = useState('Hrs')
-    //     const labelWithAsterisk = (
-    //         <span>
-    //             {componentProps.displayLable}
-    //             {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
-    //         </span>
-    //     );
-    //     return (
-    //         <>
-    //             <InputLabelFormatWrapper
-    //                 label={labelWithAsterisk}
-    //                 error={componentProps.error}
-
-    //             >
-    //                 <DropdownInput
-    //                     id={componentProps.displayFiledName}
-    //                     className="w-full flex"
-    //                     type="number"
-    //                     placeholder={componentProps.displayLable}
-    //                     value={duration}
-    //                     // onChange={(e) => setDuration(e.target.value)}
-    //                     onChange={(e) => onChange(e.target.value)}
-    //                     dropdownValue={unit}
-    //                     onDropdownChange={(e) => setUnit(e.target.value)}
-    //                     options={['Hrs', 'Min']}
-    //                 />
-    //             </InputLabelFormatWrapper>
-
-    //         </>
-    //     )
-    // },
     INPUT_SELECT_TIME: ({ value, onChange, componentProps }) => {
         const labelWithAsterisk = (
             <span>
@@ -655,8 +684,7 @@ export const componentMap = {
             </InputLabelFormatWrapper>
         );
     },
-
-    CUSTOM_BLOCK_ASSETS: ({ value, onChange, componentProps }) => (
+    CUSTOM_BLOCK_ASSETS: ({ }) => (
         <AssetsTable className="shadow-lg rounded-lg" />
     ),
     ATTACHMENT: ({ value, onChange, componentProps }) => {
@@ -715,7 +743,7 @@ export const componentMap = {
         return (
             <>
                 <DescriptionAttachments
-                    value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
+                    value={value || [{ description: "", }]}
                     onChange={onChange}
                     componentProps={componentProps}
                     className="mb-4"
@@ -728,7 +756,7 @@ export const componentMap = {
         return (
             <>
                 <DescriptionAttachments
-                    value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
+                    value={value || [{ description: "", }]}
                     onChange={onChange}
                     componentProps={componentProps}
                     className="mb-4"
@@ -741,7 +769,7 @@ export const componentMap = {
         return (
             <>
                 <DescriptionAttachments
-                    value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
+                    value={value || [{ description: "", }]}
                     onChange={onChange}
                     componentProps={componentProps}
                     className="mb-4"
@@ -754,7 +782,7 @@ export const componentMap = {
         return (
             <>
                 <DescriptionAttachments
-                    value={value || [{ id: Date.now(), description: "", filePath: "", fileName: "" }]}
+                    value={value || [{ description: "", }]}
                     onChange={onChange}
                     componentProps={componentProps}
                     className="mb-4"
@@ -767,7 +795,6 @@ export const componentMap = {
 
 // Context for form data
 const FormContext = createContext()
-
 export const FormProvider = ({ children }) => {
     const [formData, setFormData] = useState({})
 
@@ -790,6 +817,7 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
     const [activeStep, setActiveStep] = useState(0)
     const [errors, setErrors] = useState([{}])
     const [createMocForm] = useCreateMocFormMutation()
+    const [loading, setLoading] = useState(false)
     const [formValues, setFormValues] = useState(() =>
         Array.from({ length: formConfig?.formSteps?.length || 0 }, () => ({}))
     );
@@ -807,7 +835,6 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
         });
     };
 
-
     const validateStep = () => {
         const currentStepComponents = groupedComponents[activeStep] || []
         const newErrors = [...errors]
@@ -822,7 +849,6 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
                 if (isEmpty) {
                     if (!newErrors[activeStep]) newErrors[activeStep] = {}
 
-                    // Use API's displayAlertText if available, else fallback
                     newErrors[activeStep][component.displayFiledName] =
                         component.displayAlertText || "This field is required"
 
@@ -856,7 +882,7 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
     // =============== Handle Submit ==================== 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        setLoading(true)
         if (validateStep()) {
             try {
                 // normalize step-wise formValues into single object
@@ -892,18 +918,19 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
                 };
                 console.log("MOC Form API Payload:", payload);
 
-                const res = await createMocForm(payload).unwrap();
+                // const res = await createMocForm(payload).unwrap();
 
-                if (res.success) {
-                    toast.success(res.message || "Form submitted successfully");
-                    router.push(CM_LISTING);
-                } else {
-                    toast.error(res.error || res.message || "Submission failed");
-                }
+                // if (res.success) {
+                //     toast.success(res.message || "Form submitted successfully");
+                //     router.push(CM_LISTING);
+                // } else {
+                //     toast.error(res.error || res.message || "Submission failed");
+                // }
             } catch (err) {
                 console.error("MOC Form Submit Error:", err);
                 toast.error(err?.data?.message || err?.message || "Submission failed");
             }
+            setLoading(false)
         }
     };
 
@@ -1034,8 +1061,9 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
                             className="w-40 rounded-lg"
                             type="button"
                             onClick={handleSubmit}
+                            disabled={loading}
                         >
-                            Submit
+                            {loading ? "Submitting..." : "Submit"}
                             <ChevronRight />
                         </Button>
                     ) : (
@@ -1044,8 +1072,9 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
                             className="w-40 rounded-lg"
                             type="button"
                             onClick={handleNext}
+                            disabled={loading}
                         >
-                            Next
+                            {loading ? "Submitting..." : "Next"}
                             <ChevronRight />
                         </Button>
                     )}
