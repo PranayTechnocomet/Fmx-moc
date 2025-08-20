@@ -45,7 +45,7 @@ export const RenderTableRow = ({
                     </span>
                     <span>
                         {row.createdAt &&
-                            formatDistanceToNow(new Date(row.createdAt), {
+                            formatDistanceToNow(new Date(cellValue || row.createdAt), {
                                 addSuffix: true
                             })}
                     </span>
