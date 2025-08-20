@@ -290,6 +290,12 @@ export const componentMap = {
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
+        useEffect(() => {
+            if (componentProps?.disabled) {
+                onChange(componentProps?.defaultValue ?? "");
+            }
+        }, [componentProps?.disabled]);
+
 
         const inputValue = value ?? componentProps?.defaultValue ?? "";
 
@@ -745,7 +751,6 @@ export const componentMap = {
         )
     },
     CUSTOM_BLOCK_POSTCHANGE_TESTING: ({ value, onChange, componentProps }) => {
-
         return (
             <>
                 <DescriptionAttachments
@@ -777,81 +782,35 @@ export const FormProvider = ({ children }) => {
     )
 }
 
-// FormBuilder Component
-const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
+// ================ FormBuilder Component =================
+const FormBuilder = ({ formConfig, isGridLayout }) => {
     console.log("formConfigDetails--->", formConfig);
 
     const router = useRouter()
     const [activeStep, setActiveStep] = useState(0)
-
-    const [formValues, setFormValues] = useState(() => [
-        ...Array(formConfig?.formSteps?.length).fill({})
-    ]);
     const [errors, setErrors] = useState([{}])
-    // const [createHotoForm] = useCreateHotoFormMutation()
     const [createMocForm] = useCreateMocFormMutation()
+    const [formValues, setFormValues] = useState(() =>
+        Array.from({ length: formConfig?.formSteps?.length || 0 }, () => ({}))
+    );
 
     const handleInputChange = ({ activeStep, id, value }) => {
         setFormValues((prev) => {
-            const currentStepValues = prev[activeStep] || [{}]
-            const newValues = [...prev]
+            const newValues = [...prev];
+
             newValues[activeStep] = {
-                ...currentStepValues,
+                ...(prev[activeStep] || {}),
                 [id]: value
-            }
-            return newValues
-        })
-    }
+            };
 
-    // const validateStep = () => {
-    //     const currentStepComponents =
-    //         groupedComponents.stepComponents
-    //     const newErrors = [{}]
-    //     let isValid = true
+            return newValues;
+        });
+    };
 
-    //     currentStepComponents.forEach((component) => {
-    //         if (component.mendatory) {
-    //             const value = formValues[activeStep][component.displayFiledName]
-    //             const isEmpty =
-    //                 value === undefined || value === null || value === ""
-    //             // ||isValidHotoFormTabObject(value)
-    //             if (isEmpty) {
-    //                 newErrors[activeStep][component.displayFiledName] =
-    //                     "This field is required"
-    //                 isValid = false
-    //             }
-    //         }
-    //     })
-    //     setErrors(newErrors)
-    //     return isValid
-    // }
-
-    // const validateStep = () => {
-    //     const currentStepComponents = groupedComponents[activeStep] || []
-    //     const newErrors = [...errors] // keep same shape if needed
-    //     let isValid = true
-
-    //     currentStepComponents.forEach((component) => {
-    //         if (component.mendatory) {
-    //             const value = formValues[activeStep]?.[component.displayFiledName]
-    //             const isEmpty =
-    //                 value === undefined || value === null || value === ""
-    //             if (isEmpty) {
-    //                 if (!newErrors[activeStep]) newErrors[activeStep] = {}
-    //                 newErrors[activeStep][component.displayFiledName] =
-    //                     "This field is required"
-    //                 isValid = false
-    //             }
-    //         }
-    //     })
-
-    //     setErrors(newErrors)
-    //     return isValid
-    // }
 
     const validateStep = () => {
         const currentStepComponents = groupedComponents[activeStep] || []
-        const newErrors = [...errors] // keep same shape if needed
+        const newErrors = [...errors]
         let isValid = true
 
         currentStepComponents.forEach((component) => {
@@ -894,71 +853,46 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         setActiveStep(0)
     }
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault()
-    //     if (validateStep()) {
-    //         createHotoForm({
-    //             hotoId: hotoId,
-    //             hotoFormData: formValues
-    //         })
-    //             .unwrap()
-    //             .then((res) => {
-    //                 console.log('res', res);
-
-    //                 toast.success(res.message || "Form submitted successfully")
-    //                 router.push(CM_LISTING)
-    //             })
-    //             .catch((err) => {
-    //                 console.log(err)
-    //             })
-    //         // Handle form submission
-    //     }
-    // }
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     if (validateStep()) {
-    //         try {
-    //             const res = await createMocForm({
-    //                 // file: selectedFile, 
-    //                 mocConfigId: formConfig?.id,
-    //                 mocNo: "SR999", 
-    //                 mocFormData: formValues
-    //             });
-    //             console.log('res', res);
-
-    //             toast.success(res.message || "Form submitted successfully");
-    //             router.push(CM_LISTING);
-
-    //         } catch (err) {
-    //             console.error("MOC Form Submit Error:", err);
-    //             toast.error(err?.message || "Submission failed");
-    //         }
-    //     }
-    // };
-    // const {siteId, token} = useSelector((state) => state.auth)
-
+    // =============== Handle Submit ==================== 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validateStep()) {
             try {
-                // const res = await createMocForm({
-                //     mocConfigId: formConfig?.id,
-                //     mocNo: formConfig?.mocNo,
-                //     mocData: formValues
-                // }).unwrap();
-                const res = await createMocForm({
-                    // siteId,
-                    // token,
+                // normalize step-wise formValues into single object
+                const normalizeMocFormData = (mocFormData) => {
+                    if (!Array.isArray(mocFormData)) return mocFormData;
+
+                    return mocFormData.reduce((acc, item) => {
+                        return {
+                            ...acc,
+                            ...Object.fromEntries(
+                                Object.entries(item).map(([key, value]) => {
+                                    if (Array.isArray(value)) {
+                                        return [key, value];
+                                    }
+                                    return [key, value];
+                                })
+                            ),
+                        };
+                    }, {});
+                };
+
+                const mergedFormValues = normalizeMocFormData(formValues);
+
+                // merge attachments properly
+                // const finalFormData = {
+                //     ...mergedFormValues,
+                // };
+
+                const payload = {
                     mocConfigId: formConfig?.mocConfigId,
                     mocNo: formConfig?.mocNo,
-                    mocFormData: formValues,
-                    files: formValues.attachments || [],
-                }).unwrap();
+                    mocFormData: mergedFormValues,
+                };
+                console.log("MOC Form API Payload:", payload);
 
-
-                console.log("MOC Form API Response:", res.mocFormData);
+                const res = await createMocForm(payload).unwrap();
 
                 if (res.success) {
                     toast.success(res.message || "Form submitted successfully");
@@ -966,7 +900,6 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                 } else {
                     toast.error(res.error || res.message || "Submission failed");
                 }
-
             } catch (err) {
                 console.error("MOC Form Submit Error:", err);
                 toast.error(err?.data?.message || err?.message || "Submission failed");
@@ -974,79 +907,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         }
     };
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     if (validateStep()) {
-    //         try {
-    //             // 🔹 Transform attachments into required format
-    //             const transformedFiles =
-    //                 (formValues.attachments || []).map((file) => ({
-    //                     fileName: file.name,
-    //                     fileUrl: file.url || URL.createObjectURL(file), // agar upload pachhi URL ave to te use karo
-    //                 }));
-
-    //             // 🔹 Inject into mocFormData
-    //             const updatedFormData = {
-    //                 ...formValues,
-    //                 weiurdecewni5: transformedFiles, // 👈 backend expected field
-    //             };
-
-    //             // 🔹 Call API
-    //             const res = await createMocForm({
-    //                 mocConfigId: formConfig?.mocConfigId,
-    //                 mocNo: formConfig?.mocNo,
-    //                 mocFormData: updatedFormData,
-    //             }).unwrap();
-
-    //             console.log("MOC Form API Response:", res);
-
-    //             if (res.success) {
-    //                 toast.success(res.message || "Form submitted successfully");
-    //                 router.push(CM_LISTING);
-    //             } else {
-    //                 toast.error(res.error || res.message || "Submission failed");
-    //             }
-    //         } catch (err) {
-    //             console.error("MOC Form Submit Error:", err);
-    //             toast.error(err?.data?.message || err?.message || "Submission failed");
-    //         }
-    //     }
-    // };
-
-
-    // const { createMocFormApi } = useMoc();
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault()
-
-    //     if (validateStep()) {
-    //         try {
-    //             const res = await createMocFormApi({
-    //                 mocConfigId: formConfig?.mocConfigId,
-    //                 mocNo: formConfig?.mocNo,
-    //                 mocFormData: formValues,
-    //                 files: formValues.attachments || [],
-    //             })
-
-    //             if (res.success) {
-    //                 router.push(CM_LISTING)
-    //             }
-    //         } catch (err) {
-    //             console.error("MOC Form Submit Error:", err)
-    //         }
-    //     }
-    // }
-
-
-
-
-
-
-
+    // Get Step Components
     const stepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents || []
-    // console.log('isFormGrid', formConfig?.formSteps?.[activeStep]?.isFormGrid);
-    // console.log('mocNo', formConfig?.mocNo);
 
     // Group components by SEPARATORs
     const groupedComponents = []
@@ -1065,18 +927,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
         groupedComponents.push(currentGroup)
     }
 
-    // console.log('groupedComponents', groupedComponents);
-
-
     return (
         <form className="overflow-auto h-screen">
-            {/* <StepperProgressBar
-                className="max-w-xl mx-auto"
-                activeStep={activeStep}
-                steps={formConfig?.formSteps?.map((step) => ({
-                    label: step.stepName
-                }))}
-            /> */}
             {formConfig?.formSteps?.length > 1 && (
                 <StepperProgressBar
                     className="max-w-xl mx-auto"
@@ -1103,9 +955,8 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                         group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_POSTCHANGE_TESTING"
 
                     // const formGrid = formConfig?.formSteps?.[activeStep]?.isFormGrid
-
-
                     console.log('description-->', group);
+
                     return (
                         <Card key={groupIndex} className="rounded-2xl mb-6 p-4 pt-0">
                             <div className="text-lg font-bold mb-0">{title}</div>
@@ -1153,8 +1004,6 @@ const FormBuilder = ({ formConfig, hotoId, isGridLayout }) => {
                         </Card>
                     );
                 })}
-
-                {/* </Card> */}
             </div>
 
             {/* Footer Buttons */}
