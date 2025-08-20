@@ -37,7 +37,6 @@ export const RenderTableRow = ({
     if (col.type === "status") {
         return (
             <td
-                key={colIndex}
                 className="p-3 text-xs text-nowrap"
             >
                 <div className="flex flex-col items-center gap-2">
@@ -59,7 +58,6 @@ export const RenderTableRow = ({
     if (col.type === "action") {
         return (
             <td
-                key={colIndex}
                 className="p-3 text-sm relative"
             >
                 <EllipsisVertical
@@ -119,7 +117,6 @@ export const RenderTableRow = ({
     if (col.type === "doc") {
         return (
             <td
-                key={colIndex}
                 className="p-3 text-sm"
             >
                 <Button
@@ -136,7 +133,6 @@ export const RenderTableRow = ({
     // Default Cell
     return (
         <td
-            key={colIndex}
             className="p-3 text-sm"
         >
             {cellValue || "-"}

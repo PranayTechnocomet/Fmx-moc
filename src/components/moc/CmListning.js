@@ -75,11 +75,10 @@ const CmListning = () => {
 
     const [currentPage, setCurrentPage] = useState(1)
     const [recordsPerPage, setRecordsPerPage] = useState(10)
-    const [actionModalIndex, setActionModalIndex] = useState(null);
-    const { selectedSite, clusters } = useHierarchy();
+    const [actionModalIndex, setActionModalIndex] = useState(null)
+    const { selectedSite, clusters } = useHierarchy()
     const [sites, setSites] = useState([])
     const router = useRouter()
-
 
     const [pagination, setPagination] = useState({
         pageIndex: 0,
@@ -132,9 +131,7 @@ const CmListning = () => {
         setColumnList(response.data?.mocColumnsList)
         setRowList(response.data?.data)
         setCounts(response.data?.counts)
-        setTotalPages(
-            Math.ceil(response.data?.data?.length / recordsPerPage)
-        )
+        setTotalPages(Math.ceil(response.data?.data?.length / recordsPerPage))
         setPaginatedData(
             response.data?.data.slice(
                 (currentPage - 1) * recordsPerPage,
@@ -153,27 +150,27 @@ const CmListning = () => {
     const handleClusterChange = (selectedOptions) => {
         // If no options are selected, reset sites and return
         if (!selectedOptions || selectedOptions.length === 0) {
-            setFilters({ ...filters, complex: [] });
-            setSites([]);
-            return;
+            setFilters({ ...filters, complex: [] })
+            setSites([])
+            return
         }
-    
+
         // Update filters with the new selected values
-        setFilters({ ...filters, complex: selectedOptions });
-    
+        setFilters({ ...filters, complex: selectedOptions })
+
         // Extract selected cluster IDs
-        const selectedClusterIds = selectedOptions.map(option => option.value);
-        
+        const selectedClusterIds = selectedOptions.map((option) => option.value)
+
         // Filter clusters based on selected IDs
-        const matchingClusters = clusters.filter(cluster => 
+        const matchingClusters = clusters.filter((cluster) =>
             selectedClusterIds.includes(cluster.id)
-        );
-        
+        )
+
         // Update sites with the matching clusters
-        setSites(matchingClusters);
-        
-        console.log("selectedOptions", selectedOptions);
-        console.log("matchingClusters", matchingClusters);
+        setSites(matchingClusters)
+
+        console.log("selectedOptions", selectedOptions)
+        console.log("matchingClusters", matchingClusters)
     }
 
     const handleSiteChange = (value) => {
@@ -234,11 +231,9 @@ const CmListning = () => {
                             value: cluster.id
                         }))}
                         value={filters.complex}
-                        onChange={(value) =>
-                            {
-                                handleClusterChange(value)
-                            }
-                        }
+                        onChange={(value) => {
+                            handleClusterChange(value)
+                        }}
                         placeholder={"Complex"}
                     />
 
@@ -417,6 +412,7 @@ const CmListning = () => {
                             >
                                 {columnList.map((col, colIndex) => (
                                     <RenderTableRow
+                                        key={`${rowIndex}-${colIndex}`} // ✅ unique key here
                                         row={row}
                                         col={col}
                                         rowIndex={rowIndex}
