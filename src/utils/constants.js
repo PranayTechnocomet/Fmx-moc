@@ -313,3 +313,36 @@ export const CM_LIST_STATUSES = {
         text: "text-lime-500"
     }
 }
+
+export const CM_LIST_MAIN_STATUS = {
+    PENDING: {
+        key: "pending",
+        status: "Pending",
+        color: "bg-primary-25",
+        text: "text-primary-100"    
+    },
+    REJECTED: {
+        key: "rejected",
+        status: "Rejected",
+        color: "bg-primary-25",
+        text: "text-primary-100"    
+    },
+    CLOSED: {
+        key: "closed",
+        status: "Closed",
+        color: "bg-primary-25",
+        text: "text-primary-100"    
+    },
+    DRAFT: {
+        key: "draft",
+        status: "Draft",
+        color: "bg-primary-25",
+        text: "text-primary-100"    
+    },
+    OVERDUE: {
+        key: "overdue",
+        status: "Overdue",
+        color: "bg-primary-25",
+        text: "text-primary-100"       
+    }
+}

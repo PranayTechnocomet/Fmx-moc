@@ -11,19 +11,17 @@ import StatusPill from "../ui/StatusPill"
 import { useGetMocDetailsMutation } from "@/redux/api/MocApis"
 import { useParams } from "next/navigation"
 import { setMocDetails } from "@/redux/slices/mocSlice"
+import { CM_LIST_MAIN_STATUS } from "@/utils/constants"
 
 const tabList = ["Details", "Approvals", "Updates", "Logs"]
 
 // Status Colors
 const getStatusConfig = (statusText) => {
-    const statusMap = {
-        Active: { style: "text-green-600 bg-green-50", label: "Active" },
-        Pending: { style: "text-yellow-600 bg-yellow-50", label: "Pending" },
-        Rejected: { style: "text-red-600 bg-red-50", label: "Rejected" },
-        Completed: { style: "text-blue-700 bg-blue-50", label: "Completed" }
-    }
     return (
-        statusMap[statusText] || {
+        {
+            style: CM_LIST_MAIN_STATUS[statusText].color,
+            label: CM_LIST_MAIN_STATUS[statusText].text
+        } || {
             style: "text-gray-600 bg-gray-50",
             label: statusText || "Unknown"
         }
@@ -48,14 +46,14 @@ export default function MocPassProfile() {
         status: "Pending"
     }
 
-    const { style: statusStyle, label: statusLabel } = getStatusConfig(
-        currentPass.status
-    )
     const mocDetails = useSelector((state) => state.moc.mocDetails)
     const [getMocDetails] = useGetMocDetailsMutation()
-    const [loading, setLoading] = useState(false);
-    const dispatch = useDispatch();
-
+    const [loading, setLoading] = useState(false)
+    const dispatch = useDispatch()
+    const { style: statusStyle, label: statusLabel } = getStatusConfig(
+        mocDetails?.detailHeader?.status
+    )
+    
     useEffect(() => {
         if (!id) return
         setLoading(true)
@@ -74,8 +72,8 @@ export default function MocPassProfile() {
 
     if (loading) {
         return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary-100"></div>
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-primary-100"></div>
             </div>
         )
     }
@@ -150,10 +148,10 @@ export default function MocPassProfile() {
 
                     <div>
                         <div className="font-bold text-xl">
-                            {currentPass.requestType}
+                            {mocDetails?.detailHeader?.title}
                         </div>
                         <div className="text-gray-500">
-                            {currentPass.requestId}
+                            {mocDetails?.detailHeader?.mocNo}
                         </div>
                     </div>
 
@@ -167,15 +165,25 @@ export default function MocPassProfile() {
 
                 {/* Meta Info */}
                 <div className="grid grid-cols-3 gap-7 mb-4 text-md">
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">
-                            Change Request Type:
-                        </div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.requestType}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
+                    {mocDetails?.detailHeader?.formData.map((item, index) =>
+                        Object.entries(item)
+                            .filter(([key]) => key !== "required")
+                            .map(([key, value], subIndex) => (
+                                <div
+                                    className="grid grid-cols-12 gap-4"
+                                    key={`moc-header-${index}-${subIndex}`}
+                                >
+                                    <div className="col-span-6 text-gray-500">
+                                        {key}
+                                    </div>
+                                    <span className="col-span-6 font-medium">
+                                        {String(value)}
+                                    </span>
+                                </div>
+                            ))
+                    )}
+
+                    {/* <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-6 text-gray-500">Region:</div>
                         <span className="col-span-6 font-medium">
                             {currentPass.region}
@@ -210,7 +218,7 @@ export default function MocPassProfile() {
                         <span className="col-span-6 font-medium">
                             {currentPass.createdBy}
                         </span>
-                    </div>
+                    </div> */}
                 </div>
             </Card>
 
