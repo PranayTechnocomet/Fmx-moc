@@ -1,5 +1,5 @@
 const StatusPill = ({ value, className }) => {
-    console.log("className", className);
+    // console.log("className", className);
     
     return (
         <span

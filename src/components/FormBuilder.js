@@ -810,17 +810,19 @@ export const FormProvider = ({ children }) => {
 }
 
 // ================ FormBuilder Component =================
-const FormBuilder = ({ formConfig, isGridLayout }) => {
+const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgressBar = true }) => {
     console.log("formConfigDetails--->", formConfig);
-
+    
     const router = useRouter()
-    const [activeStep, setActiveStep] = useState(0)
+    const [activeStep, setActiveStep] = useState(DefaultActiveStep)
     const [errors, setErrors] = useState([{}])
     const [createMocForm] = useCreateMocFormMutation()
     const [loading, setLoading] = useState(false)
     const [formValues, setFormValues] = useState(() =>
         Array.from({ length: formConfig?.formSteps?.length || 0 }, () => ({}))
     );
+
+    console.log("activeStep--->", activeStep);
 
     const handleInputChange = ({ activeStep, id, value }) => {
         setFormValues((prev) => {
@@ -834,6 +836,12 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
             return newValues;
         });
     };
+
+    useEffect(() => {
+        if (DefaultActiveStep) {
+            setActiveStep(DefaultActiveStep)
+        }
+    }, [DefaultActiveStep])
 
     const validateStep = () => {
         const currentStepComponents = groupedComponents[activeStep] || []
@@ -956,7 +964,7 @@ const FormBuilder = ({ formConfig, isGridLayout }) => {
 
     return (
         <form className="overflow-auto h-screen">
-            {formConfig?.formSteps?.length > 1 && (
+            {isProgressBar && formConfig?.formSteps?.length > 1 && (
                 <StepperProgressBar
                     className="max-w-xl mx-auto"
                     activeStep={activeStep}

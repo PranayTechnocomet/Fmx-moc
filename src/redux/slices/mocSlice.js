@@ -12,6 +12,7 @@ const initialState = {
     attachments: [{ id: Date.now(), description: "", file: null }],
     reloadSecurityData: false,
     mocDetails: null,
+    mocBasicDetails: null,
 }
 
 const mocSlice = createSlice({
@@ -59,11 +60,15 @@ const mocSlice = createSlice({
         setMocDetails: (state, action) => {
             state.mocDetails = action.payload
         },
+        setMocBasicDetails: (state, action) => {
+            state.mocBasicDetails = action.payload
+        },
     }
 })
 
 export const { setSelectedRequestType, setSelectedInwardType, setShowTransferTypes,
     setShowForm, setShowReturnAllColumn, setAttachmentFromAPI,
-    addAttachment, updateAttachment, removeAttachment, setMocDetails
+    addAttachment, updateAttachment, removeAttachment, setMocDetails,
+    setMocBasicDetails
 } = mocSlice.actions
 export default mocSlice.reducer
