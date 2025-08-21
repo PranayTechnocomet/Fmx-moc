@@ -72,6 +72,9 @@ export default function ChangeTypes() {
         }
     ]
 
+    console.log("selectedRequestType",selectedRequestType);
+    
+
     if (selectedRequestType) {
         // return <TestForm formId={selectedRequestType} />
         return <MocForm formId={selectedRequestType} />
