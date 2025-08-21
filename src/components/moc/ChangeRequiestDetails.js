@@ -1,10 +1,14 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Card from '../ui/Card'
 import CustomStepperProgressBar from '../CustomStepperProgressBar'
 import Button from '../ui/Button'
 import Image from 'next/image'
 import Logs from './Logs'
+import { useGetMocBasicDetailsMutation } from '@/redux/api/MocApis'
+import { useParams } from 'next/navigation'
+import { useDispatch, useSelector } from 'react-redux'
+import { setMocBasicDetails } from '@/redux/slices/mocSlice'
 // import AttachmentGif from "../../images/attachment-img.jfif"
 
 const approvalSteps = [
@@ -15,6 +19,7 @@ const approvalSteps = [
     { label: 'Material Returned' },
     { label: 'Pass Closed' },
 ];
+
 const defaultStatus = {
     l1Approved: true,
     l2Approved: false,
@@ -22,7 +27,6 @@ const defaultStatus = {
     materialReturned: false,
     passClosed: false
 };
-
 
 function getActiveApprovalStep(status = {}) {
     if (!status.l1Approved) return 1; // L1 Approval
@@ -32,6 +36,8 @@ function getActiveApprovalStep(status = {}) {
     if (!status.passClosed) return 5; // Pass Closed
     return 6; // All done
 }
+
+
 export default function ChangeRequiestDetails({
     details = {},
     approval = {},
@@ -41,103 +47,104 @@ export default function ChangeRequiestDetails({
     const activeApprovalStep = getActiveApprovalStep(approval.status || defaultStatus);
     const [showPreApprovedEmailPopup, setShowPreApprovedEmailPopup] = useState(false);
     const [showDCChallanPopup, setShowDCChallanPopup] = useState(false);
+
+    const { id } = useParams();
+    const [getMocBasicDetails] = useGetMocBasicDetailsMutation();
+    const dispatch = useDispatch();
+    const mocBasicDetails = useSelector((state) => state.moc.mocBasicDetails?.data)
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        if (!id) return
+        setLoading(true)
+
+        getMocBasicDetails(id)
+            .unwrap()
+            .then((res) => {
+                dispatch(setMocBasicDetails(res))
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+    }, [id])
+
+    console.log('mocBasicDetails', mocBasicDetails?.formSteps);
+
+
+    if (loading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-primary-100"></div>
+            </div>
+        )
+    }
+
+    // Grouping logic
+    const groupedComponents = [];
+    let currentGroup = [];
+
+    // loop through all steps/components
+    mocBasicDetails?.formSteps?.forEach((component) => {
+        if (component.type === "SEPARATOR") {
+            if (currentGroup.length > 0) {
+                groupedComponents.push(currentGroup);
+            }
+            // Start new group with separator
+            currentGroup = [component];
+        } else {
+            currentGroup.push(component);
+        }
+    });
+
+    // push last group
+    if (currentGroup.length > 0) {
+        groupedComponents.push(currentGroup);
+    }
+
     return (
         <div>
-            <div className="grid grid-cols-12 gap-6">
-                {/* Left: Details Sections */}
-                <div className="col-span-12 space-y-5 ">
-                    {/* GRN Detail */}
-                    <Card className='mb-5 pt-0'>
+            <div className="space-y-4">
+                {groupedComponents.map((group, idx) => {
+                    const separator = group.find((comp) => comp.type === "SEPARATOR");
+                    const title = separator?.title || separator?.separator;
 
-                        <div className="font-semibold mb-4 text-lg">
-                            Basic Details
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-6 grid grid-cols-12 gap-4 text-md">
-                                <div className="col-span-6 text-gray-500">Type of Change:</div>
-                                <span className="col-span-6 font-medium">{details.typeOfChange || 'Planned'}</span>
+                    return (
+                        <Card key={idx} className="p-3 shadow rounded-xl">
+                            {/* Card Title */}
+                            {title && (
+                                <h2 className="text-lg font-semibold mb-4 pb-1">
+                                    {title}
+                                </h2>
+                            )}
+
+                            {/* Card Body Fields */}
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                                {group
+                                    .filter((item) => item.type !== "SEPARATOR")
+                                    .map((item, index) =>
+                                        Object.entries(item)
+                                            .filter(([key]) => key !== "required" && key !== "type")
+                                            .map(([key, value], subIndex) => (
+                                                <div
+                                                    key={`moc-header-${index}-${subIndex}`}
+                                                    className="flex gap-4"
+                                                >
+                                                    <span className="text-gray-500 w-1/2">{key}</span>
+                                                    <span className="font-medium">{String(value)}</span>
+                                                </div>
+                                            ))
+                                    )}
                             </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Site Name:</div>
-                                <span className="col-span-6 font-medium">{details.siteName || 'BOM11'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Date:</div>
-                                <span className="col-span-6 font-medium">{details.date || '23 April 2024'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Change Reques:</div>
-                                <span className="col-span-6 font-medium">{details.changeRequest || 'SR992'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Risk classification of Change:</div>
-                                <span className="col-span-6 font-medium">{details.riskClassificationOfChange || 'Medium'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Date of Change:</div>
-                                <span className="col-span-6 font-medium">{details.dateOfChange || '23 April 2024'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Proposed Change:</div>
-                                <span className="col-span-6 font-medium">{details.proposedChange || 'Upgrade server hardware for improved data processing speed'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Department:</div>
-                                <span className="col-span-6 font-medium">{details.department || 'IT Operations'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Reason for Proposed Change with Technical Justification:</div>
-                                <span className="col-span-6 font-medium">{details.reasonForProposedChangeWithTechnicalJustification || 'Current server performance is inadequate for increased data load; upgrade will enhance response time and system stability.'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Equipment/Facility/Documentation Affected:</div>
-                                <span className="col-span-6 font-medium">{details.equipmentFacilityDocumentationAffected || 'Server Rack B2, Data Center SOP Document, Network Map Diagram'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Asset Types:</div>
-                                <span className="col-span-6 font-medium">{details.assetTypes || 'Server Hardware'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Asset Name:</div>
-                                <span className="col-span-6 font-medium">{details.assetName || 'Dell PowerEdge R740'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Impacts of Change:</div>
-                                <span className="col-span-6 font-medium">{details.impactsOfChange || 'Improved processing capacity, reduced latency'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Impact on redundancy:</div>
-                                <span className="col-span-6 font-medium">{details.impactOnRedundancy || 'N'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Downtime:</div>
-                                <span className="col-span-6 font-medium">{details.downtime || 'Yes'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Downtime Duration:</div>
-                                <span className="col-span-6 font-medium">{details.downtimeDuration || '2 Hours : 30 Minutes'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Reviewer Comment:</div>
-                                <span className="col-span-6 font-medium">{details.reviewerComment || 'Ensure rollback plan and notify all stakeholders before downtime'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Safety and Health Impact:</div>
-                                <span className="col-span-6 font-medium">{details.safetyAndHealthImpact || 'No direct impact; follow standard electrical safety protocol'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Cost Benefit Analysis:</div>
-                                <span className="col-span-6 font-medium">{details.costBenefitAnalysis || 'Short-term Cost: ₹2,50,000 Benefit: 30% performance boost, reduced error logs'}</span>
-                            </div>
-                            <div className="col-span-6 grid grid-cols-12 gap-4">
-                                <div className="col-span-6 text-gray-500">Environmental Impact:</div>
-                                <span className="col-span-6 font-medium">{details.environmentalImpact || 'Negligible; replaced parts will be recycled as per e-waste policy'}</span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-              
+                        </Card>
+                    );
+                })}
             </div>
+
+
         </div>
     )
 }
+
