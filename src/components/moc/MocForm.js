@@ -10,13 +10,12 @@ export default function MocForm() {
     const { loading } = useHierarchy();
     const [formConfig, setFormConfig] = useState(null);
     const [getAllDetails] = useGetAllDetailsMutation();
+    const url = new URL(window.location.href);
+    const formIdParam = url.searchParams.get('formId');
 
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const url = new URL(window.location.href);
-                const formIdParam = url.searchParams.get('formId');
-
                 const response = await getAllDetails(formIdParam).unwrap();
                 // console.log("response11111", response?.data?.mocConfigId);
 
@@ -27,7 +26,7 @@ export default function MocForm() {
         };
 
         fetchDetails();
-    }, [getAllDetails]);
+    }, [getAllDetails, formIdParam]);
 
     if (loading || !formConfig?.formSteps) {
         return (
