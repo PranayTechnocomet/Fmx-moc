@@ -13,6 +13,11 @@ import { useParams } from "next/navigation"
 import { setMocDetails } from "@/redux/slices/mocSlice"
 import { CM_LIST_MAIN_STATUS } from "@/utils/constants"
 import ImpactAnalysis from "./ImpactAnalysis"
+import StageFormBuilder from "../StageFormBuilder"
+import { FormProvider } from "react-hook-form"
+import FormBuilder from "../FormBuilder"
+import Image from "next/image"
+import mocIcon from "../../images/MOC_Icons.png"
 
 // const tabList = ["Details", "Approvals", "Updates", "Logs"]
 
@@ -35,8 +40,6 @@ export default function MocPassProfile() {
     const [activeTab, setActiveTab] = useState("Details")
     const { id } = useParams()
 
-
-
     // Example: Pick first gate pass for profile (or adjust as needed)
     const currentPass = gatePasses?.[0] || {
         requestType: "Emergency Change Request",
@@ -57,13 +60,22 @@ export default function MocPassProfile() {
         mocDetails?.detailHeader?.status
     )
 
+
+    // Fetch moc details
     useEffect(() => {
         if (!id) return
         setLoading(true)
         getMocDetails(id)
             .unwrap()
             .then((res) => {
-                dispatch(setMocDetails(res.data))
+                console.log("res", res.data);
+                const updatedResponse = {
+                    ...res.data,
+                    formSteps: res.data.stages
+                }
+                console.log("updatedResponse", updatedResponse);
+
+                dispatch(setMocDetails(updatedResponse))
             })
             .catch((err) => {
                 console.log(err)
@@ -73,8 +85,24 @@ export default function MocPassProfile() {
             })
     }, [getMocDetails, id])
 
-    console.log('mocDetails-Listing-tabs', mocDetails?.listingTabs);
+    console.log('mocDetails-Listing-tabs', mocDetails);
+
+
+
     const tabList = mocDetails?.listingTabs || ["Details"]
+    const isGridLayout = mocDetails?.formSteps?.isFormGrid !== true;
+    const [activeStep, setActiveStep] = useState(0)
+
+    useEffect(() => {
+        if (!mocDetails) return
+        const index = tabList.indexOf(activeTab)
+        console.log("index", index);
+
+        setActiveStep(index - 1);
+    }, [activeTab])
+
+    console.log("activeStep", activeStep);
+    console.log("activeTab", activeTab);
 
 
     if (loading) {
@@ -84,14 +112,17 @@ export default function MocPassProfile() {
             </div>
         )
     }
+
+
+
     return (
         <div className="p-6 min-h-screen overflow-auto h-screen pb-20">
             <Card className="mb-5 pt-0">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="w-[65px] h-[65px] p-4 flex justify-center items-center rounded-full bg-[#F5F5F7]">
+                    <div className="w-[70px] h-[70px] p-4 flex justify-center items-center rounded-full bg-[#F5F5F7]">
                         {/* SVG Icon */}
-                        <svg
+                        {/* <svg
                             width="36"
                             height="36"
                             viewBox="0 0 34 34"
@@ -150,14 +181,20 @@ export default function MocPassProfile() {
                                 d="M28.6875 27.625H21.7812V28.6875H28.6875V27.625Z"
                                 fill="#153AC7"
                             />
-                        </svg>
+                        </svg> */}
+                        <Image
+                            src={mocIcon}
+                            alt="MOC Icon"
+                            width={70}
+                            height={70}
+                        />
                     </div>
 
                     <div>
                         <div className="font-bold text-xl">
                             {mocDetails?.detailHeader?.title}
                         </div>
-                        <div className="text-gray-500">
+                        <div className="text-gray-700">
                             {mocDetails?.detailHeader?.mocNo}
                         </div>
                     </div>
@@ -180,8 +217,8 @@ export default function MocPassProfile() {
                                     className="grid grid-cols-12 gap-4"
                                     key={`moc-header-${index}-${subIndex}`}
                                 >
-                                    <div className="col-span-6 text-gray-500">
-                                        {key}
+                                    <div className="col-span-6 text-gray-600">
+                                        {key}:
                                     </div>
                                     <span className="col-span-6 font-medium">
                                         {String(value)}
@@ -190,42 +227,6 @@ export default function MocPassProfile() {
                             ))
                     )}
 
-                    {/* <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">Region:</div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.region}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">Site:</div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.site}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">
-                            Start Date & Time:
-                        </div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.startDate}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">
-                            End Date & Time:
-                        </div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.endDate}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-6 text-gray-500">
-                            Created By:
-                        </div>
-                        <span className="col-span-6 font-medium">
-                            {currentPass.createdBy}
-                        </span>
-                    </div> */}
                 </div>
             </Card>
 
@@ -236,15 +237,96 @@ export default function MocPassProfile() {
                 setActiveTab={setActiveTab}
             />
 
+
             {/* Tab Content */}
-            <div className="mt-5">
+            {/* <div className="mt-5">
                 {activeTab === "Details" && <ChangeRequiestDetails />}
                 {activeTab === "Approvals" && <Approvals />}
                 {activeTab === "Updates" && <Updates />}
                 {activeTab === "Logs" && <Logs />}
                 {activeTab === "Impact Analysis" && <ImpactAnalysis />}
-            </div>
+            </div> */}
+
+            {activeTab === "Details" && <ChangeRequiestDetails />}
+            {activeTab !== "Details" && (
+                <div className='mt-4 w-full'>
+                    <FormProvider>
+                        {/* <StageFormBuilder
+                        mocDetails={mocDetails}
+                        // isGridLayout={isGridLayout}
+                        hotoId={mocDetails?.id}
+                    /> */}
+
+                        {mocDetails && (
+                            <FormBuilder
+                                formConfig={mocDetails}
+                                isGridLayout={isGridLayout || false}
+                                hotoId={mocDetails?._id}
+                                DefaultActiveStep={activeStep}
+                                isProgressBar={false}
+                            />
+                        )}
+                    </FormProvider>
+                </div>
+            )}
         </div>
     )
 }
+
+
+
+// 'use client';
+
+// import React, { useEffect, useState } from 'react';
+// import { useHierarchy } from '@/hooks/useHierarchy';
+// import FormBuilder, { FormProvider } from '../FormBuilder';
+// import { useGetAllDetailsMutation } from '@/redux/api/MocApis';
+// import StageFormBuilder from '../StageFormBuilder';
+
+// export default function MocPassProfile() {
+//     const { loading } = useHierarchy();
+// const [formConfig, setFormConfig] = useState(null);
+// const [getAllDetails] = useGetAllDetailsMutation();
+
+// useEffect(() => {
+//     const fetchDetails = async () => {
+//         try {
+//             const url = new URL(window.location.href);
+//             const formIdParam = url.searchParams.get('formId');
+
+//             const response = await getAllDetails(formIdParam).unwrap();
+//             // console.log("response11111", response?.data?.mocConfigId);
+
+//             setFormConfig(response?.data || {});
+//         } catch (err) {
+//             console.error("Failed to fetch details", err);
+//         }
+//     };
+
+//     fetchDetails();
+// }, [getAllDetails]);
+
+//     if (loading || !formConfig?.formSteps) {
+//         return (
+//             <div className="flex justify-center items-center  h-[calc(100vh-120px)]">
+//             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+//         </div>
+//         );
+//     }
+
+// const isGridLayout = formConfig?.formSteps?.isFormGrid !== true;
+
+//     return (
+// <div className='mt-4 w-full'>
+//     <FormProvider>
+//         <StageFormBuilder
+//             formConfig={formConfig}
+//             isGridLayout={isGridLayout}
+//             hotoId={formConfig?.id}
+//         />
+//     </FormProvider>
+// </div>
+//     );
+// }
+
 
