@@ -12,8 +12,10 @@ import { useGetMocDetailsMutation } from "@/redux/api/MocApis"
 import { useParams } from "next/navigation"
 import { setMocDetails } from "@/redux/slices/mocSlice"
 import { CM_LIST_MAIN_STATUS } from "@/utils/constants"
+import ImpactAnalysis from "./ImpactAnalysis"
 
-const tabList = ["Details", "Approvals", "Updates", "Logs"]
+// const tabList = ["Details", "Approvals", "Updates", "Logs"]
+
 
 // Status Colors
 const getStatusConfig = (statusText) => {
@@ -30,9 +32,10 @@ const getStatusConfig = (statusText) => {
 
 export default function MocPassProfile() {
     const gatePasses = useSelector((state) => state.getGatePass.gatePasses)
-
     const [activeTab, setActiveTab] = useState("Details")
     const { id } = useParams()
+
+
 
     // Example: Pick first gate pass for profile (or adjust as needed)
     const currentPass = gatePasses?.[0] || {
@@ -53,7 +56,7 @@ export default function MocPassProfile() {
     const { style: statusStyle, label: statusLabel } = getStatusConfig(
         mocDetails?.detailHeader?.status
     )
-    
+
     useEffect(() => {
         if (!id) return
         setLoading(true)
@@ -69,6 +72,10 @@ export default function MocPassProfile() {
                 setLoading(false)
             })
     }, [getMocDetails, id])
+
+    console.log('mocDetails-Listing-tabs', mocDetails?.listingTabs);
+    const tabList = mocDetails?.listingTabs || ["Details"]
+
 
     if (loading) {
         return (
@@ -235,7 +242,9 @@ export default function MocPassProfile() {
                 {activeTab === "Approvals" && <Approvals />}
                 {activeTab === "Updates" && <Updates />}
                 {activeTab === "Logs" && <Logs />}
+                {activeTab === "Impact Analysis" && <ImpactAnalysis />}
             </div>
         </div>
     )
 }
+

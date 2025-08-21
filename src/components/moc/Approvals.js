@@ -225,8 +225,11 @@ import Button from '../ui/Button';
 import StatusPill from '../ui/StatusPill';
 import FieldSetInput from '../ui/form/FieldSetInput';
 import Modal from '../ui/overlays/Modal';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Steper from './Steper';
+import { useGetMocDetailsMutation } from '@/redux/api/MocApis';
+import { useParams } from 'next/navigation';
+import { setMocDetails } from '@/redux/slices/mocSlice';
 
 const getStatusConfig = (statusText) => {
   const normalizedStatus = (statusText || 'Pending').trim().toLowerCase();
@@ -264,21 +267,48 @@ export default function Approvals() {
   ];
 
   const [activeStep, setActiveStep] = useState(1);
+  const [getMocDetails] = useGetMocDetailsMutation()
+  const [loading, setLoading] = useState(false)
+  const dispatch = useDispatch()
+  const { id } = useParams()
+  const mocDetails = useSelector((state) => state.moc.mocDetails)
+
+
 
   // Simulate API Call to get current step from server
+  // useEffect(() => {
+  //   const fetchCurrentStep = async () => {
+  //     try {
+  //       // Example API call
+  //       const response = await fetch('/api/getApprovalStep');
+  //       if (!response.ok) {
+  //         throw new Error('Network response was not ok');
+  //       }
+  //       const data = await response.json();
+  //       setActiveStep(data.activeStepIndex || 0);
+  //     } catch (err) {
+  //       console.error('Error fetching step:', err.message);
+  //     }
+  //   };
+  //   fetchCurrentStep();
+  // }, []);
   useEffect(() => {
-    const fetchCurrentStep = async () => {
-      try {
-        // Example API call
-        const response = await fetch('/api/getApprovalStep');
-        const data = await response.json();
-        setActiveStep(data.activeStepIndex || 0);
-      } catch (err) {
-        console.error('Error fetching step:', err);
-      }
-    };
-    fetchCurrentStep();
-  }, []);
+    if (!id) return
+    setLoading(true)
+    getMocDetails(id)
+      .unwrap()
+      .then((res) => {
+        dispatch(setMocDetails(res.data))
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [getMocDetails, id])
+
+  console.log('Approve for mocDetails -->', mocDetails);
 
   const { style: statusStyle, label: statusLabel } = getStatusConfig(
     currentPass?.status
