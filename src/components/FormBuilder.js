@@ -810,19 +810,20 @@ export const FormProvider = ({ children }) => {
 }
 
 // ================ FormBuilder Component =================
-const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgressBar = true }) => {
+const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isProgressBar = true, setActiveTab, tabList }) => {
     console.log("formConfigDetails--->", formConfig);
+    console.log("DefaultActiveStep-dhoom-machale", DefaultActiveStep);
     
     const router = useRouter()
-    const [activeStep, setActiveStep] = useState(DefaultActiveStep)
+    const [activeStep, setActiveStep] = useState(0)
     const [errors, setErrors] = useState([{}])
     const [createMocForm] = useCreateMocFormMutation()
     const [loading, setLoading] = useState(false)
+    const [formLoading, setFormLoading] = useState(true)
+    const [stepComponents, setStepComponents] = useState([])
     const [formValues, setFormValues] = useState(() =>
         Array.from({ length: formConfig?.formSteps?.length || 0 }, () => ({}))
     );
-
-    console.log("activeStep--->", activeStep);
 
     const handleInputChange = ({ activeStep, id, value }) => {
         setFormValues((prev) => {
@@ -838,10 +839,26 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgre
     };
 
     useEffect(() => {
-        if (DefaultActiveStep) {
+        if (DefaultActiveStep !== null) {
+            setFormLoading(true)
             setActiveStep(DefaultActiveStep)
+            setFormLoading(false)
         }
     }, [DefaultActiveStep])
+
+    useEffect(() => {
+        setFormLoading(true)
+        setStepComponents(formConfig?.formSteps?.[activeStep]?.stepComponents || [])
+        setFormLoading(false)
+    }, [activeStep])
+
+    if (formLoading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-primary-100"></div>
+            </div>
+        )
+    }
 
     const validateStep = () => {
         const currentStepComponents = groupedComponents[activeStep] || []
@@ -871,14 +888,26 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgre
 
     const handleNext = () => {
         if (validateStep()) {
-            setActiveStep((prev) =>
-                Math.min(prev + 1, formConfig.formSteps.length - 1)
-            )
+            if (DefaultActiveStep !== null) {
+                setActiveStep((prev) =>
+                    Math.min(prev + 1, formConfig.formSteps.length - 1)
+                )
+                setActiveTab(tabList[activeStep + 1])
+            } else {
+                setActiveStep((prev) =>
+                    Math.min(prev + 1, formConfig.formSteps.length - 1)
+                )
+            }
         }
     }
 
     const handleBack = () => {
-        setActiveStep((prev) => Math.max(prev - 1, 0))
+        if (DefaultActiveStep !== null) {
+            setActiveStep((prev) => Math.max(prev - 1, -1))
+            setActiveTab(tabList[activeStep])
+        } else {
+            setActiveStep((prev) => Math.max(prev - 1, 0))
+        }
     }
 
     const handleReset = () => {
@@ -943,7 +972,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgre
     };
 
     // Get Step Components
-    const stepComponents = formConfig?.formSteps?.[activeStep]?.stepComponents || []
+   
 
     // Group components by SEPARATORs
     const groupedComponents = []
@@ -1043,7 +1072,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = 0, isProgre
 
             {/* Footer Buttons */}
             <div className="flex items-center justify-end mt-2 h-fit ">
-                {activeStep > 0 && (
+                {(activeStep > 0 || (DefaultActiveStep !== null && DefaultActiveStep >= 0)) && (
                     <Button
                         type="button"
                         className="border-transparent text-slate-700 inline-flex"

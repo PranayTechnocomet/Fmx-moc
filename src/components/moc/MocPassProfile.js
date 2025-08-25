@@ -91,18 +91,22 @@ export default function MocPassProfile() {
 
     const tabList = mocDetails?.listingTabs || ["Details"]
     const isGridLayout = mocDetails?.formSteps?.isFormGrid !== true;
-    const [activeStep, setActiveStep] = useState(0)
+    const [activeStepController, setActiveStepController] = useState(0)
+    const [activeStepLoading, setActiveStepLoading] = useState(false)
 
     useEffect(() => {
-        if (!mocDetails) return
-        const index = tabList.indexOf(activeTab)
+        if (!mocDetails?._id) return
+        setActiveStepLoading(true)
+        const index = tabList.indexOf(activeTab);
         console.log("index", index);
 
-        setActiveStep(index - 1);
+        setActiveStepController(index - 1);
+        setActiveStepLoading(false);
     }, [activeTab])
 
-    console.log("activeStep", activeStep);
+    console.log("activeStep--", activeStepController);
     console.log("activeTab", activeTab);
+    console.log("mocDetails", mocDetails);
 
 
     if (loading) {
@@ -251,19 +255,15 @@ export default function MocPassProfile() {
             {activeTab !== "Details" && (
                 <div className='mt-4 w-full'>
                     <FormProvider>
-                        {/* <StageFormBuilder
-                        mocDetails={mocDetails}
-                        // isGridLayout={isGridLayout}
-                        hotoId={mocDetails?.id}
-                    /> */}
-
-                        {mocDetails && (
+                        {mocDetails._id && !activeStepLoading && (
                             <FormBuilder
                                 formConfig={mocDetails}
                                 isGridLayout={isGridLayout || false}
                                 hotoId={mocDetails?._id}
-                                DefaultActiveStep={activeStep}
+                                DefaultActiveStep={activeStepController}
                                 isProgressBar={false}
+                                tabList={tabList}
+                                setActiveTab={setActiveTab}
                             />
                         )}
                     </FormProvider>
