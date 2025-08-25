@@ -10,6 +10,7 @@ import { useParams } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { setMocBasicDetails } from '@/redux/slices/mocSlice'
 // import AttachmentGif from "../../images/attachment-img.jfif"
+import user from "../../images/CBRELogo.png"
 
 const approvalSteps = [
     { label: 'Pass Created' },
@@ -54,6 +55,7 @@ export default function ChangeRequiestDetails({
     const mocBasicDetails = useSelector((state) => state.moc.mocBasicDetails?.data)
     const [loading, setLoading] = useState(false)
 
+    // Fetch Moc Basic Details
     useEffect(() => {
         if (!id) return
         setLoading(true)
@@ -112,7 +114,7 @@ export default function ChangeRequiestDetails({
                     const title = separator?.title || separator?.separator;
 
                     return (
-                        <Card key={idx} className="p-3 shadow rounded-xl">
+                        <Card key={idx} className="shadow rounded-xl">
                             {/* Card Title */}
                             {title && (
                                 <h2 className="text-lg font-semibold mb-4 pb-1">
@@ -121,23 +123,55 @@ export default function ChangeRequiestDetails({
                             )}
 
                             {/* Card Body Fields */}
-                            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                            <div className={`grid grid-cols-${group.some((item) => item.type === "ATTACHMENT") ? 1 : 2} gap-y-4 gap-x-8`}>
                                 {group
                                     .filter((item) => item.type !== "SEPARATOR")
-                                    .map((item, index) =>
+                                    .flatMap((item, index) =>
                                         Object.entries(item)
                                             .filter(([key]) => key !== "required" && key !== "type")
                                             .map(([key, value], subIndex) => (
                                                 <div
                                                     key={`moc-header-${index}-${subIndex}`}
-                                                    className="flex gap-4"
+                                                    className="flex gap-4 items-center"
                                                 >
-                                                    <span className="text-gray-500 w-1/2">{key}</span>
-                                                    <span className="font-medium">{String(value)}</span>
+                                                    {/* Normal fields */}
+                                                    {key !== "Attachment" ? (
+                                                        <>
+                                                            <span className="text-gray-500 w-1/2 capitalize">{key}</span>
+                                                            <span className="font-medium">{String(value)}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {/* // Attachment preview block */}
+                                                            <span className="text-gray-500 w-1/4 capitalize">{key}</span>
+                                                            <div className="flex border border-dashed border-gray-300 p-2 rounded-lg w-full items-center">
+                                                                <img
+                                                                    src={
+                                                                        value?.fileName?.match(/\.(jpg|jpeg|png)$/i)
+                                                                            ? value?.fileUrl
+                                                                            : "/file-icon.png"
+                                                                    }
+                                                                    alt={value?.fileName || "Attachment"}
+                                                                    width={50}
+                                                                    height={50}
+                                                                    className="rounded-lg object-cover"
+                                                                />
+                                                                <div className="ml-3 flex-1 overflow-hidden">
+                                                                    <p className="font-medium text-sm text-gray-900 truncate">
+                                                                        {value?.fileName}
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        {value?.fileSizeMB} MB
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
                                             ))
                                     )}
                             </div>
+
                         </Card>
                     );
                 })}

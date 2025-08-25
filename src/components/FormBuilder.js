@@ -52,6 +52,29 @@ export const InputLabelFormatWrapper = ({ children, label, error, type }) => {
     )
 }
 
+export const CheckboxFormatWrapper = ({ children, label, error, type }) => {
+    return (
+        <div
+            className={
+                "flex items-baseline w-full justify-stretch gap-3 " +
+                (type === "CUSTOM_USER_BLOCK" ? "" : "!mb-6")
+            }
+        >
+            <div className="flex-col ">
+                {children}
+                {error && (
+                    <span className="text-red-600 text-sm mt-2">{error}</span>
+                )}
+            </div>
+            <label className="block text-base font-medium text-gray-700 w-2/5">
+                {label}
+            </label>
+
+        </div>
+    )
+}
+
+
 // Add this new component at the top of your file
 const CustomUserSearch = ({ options, onSelect, placeholder }) => {
     const [searchTerm, setSearchTerm] = useState("")
@@ -152,22 +175,22 @@ export const componentMap = {
     // },
     DATE_TIME: ({ value, onChange, componentProps }) => {
         const now = new Date();
-        const tzOffset = now.getTimezoneOffset() * 60000; 
+        const tzOffset = now.getTimezoneOffset() * 60000;
         const localISO = new Date(now - tzOffset).toISOString().slice(0, 10); // YYYY-MM-DD
-    
+
         useEffect(() => {
             if (!value) {
                 onChange(localISO);
             }
         }, []);
-    
+
         const labelWithAsterisk = (
             <span>
                 {componentProps.displayLable}
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
-    
+
         // Formatter (for display)
         const formatToDDMMYYYYWithTime = (dateStr) => {
             if (!dateStr) return "";
@@ -177,9 +200,9 @@ export const componentMap = {
             const year = date.getFullYear().toString().slice(-2); // 25
             return `${day} ${month}, ${year}`;
         };
-    
-        const fieldValue = value || localISO ;
-    
+
+        const fieldValue = value || localISO;
+
         return (
             <InputLabelFormatWrapper
                 label={labelWithAsterisk}
@@ -198,11 +221,11 @@ export const componentMap = {
                         onChange={(e) => onChange(e.target.value)}
                     />
                 </div>
-    
-                
+
+
             </InputLabelFormatWrapper>
         );
-    },    
+    },
     FROM_TO_DATE_TIME: ({ value, onChange, componentProps }) => {
         const fieldValue = value || ""
 
@@ -392,6 +415,7 @@ export const componentMap = {
                 {componentProps?.mendatory && <span className="text-red-500 pl-1">*</span>}
             </span>
         );
+        console.log("value-----", value);
         return (
 
             <InputLabelFormatWrapper
@@ -791,6 +815,348 @@ export const componentMap = {
             </>
         )
     },
+    CHECK_BOX: ({ value, onChange, componentProps }) => {
+        const labelWithAsterisk = (
+            <span>
+                {componentProps.displayLable}
+                {componentProps?.mendatory && (
+                    <span className="text-red-500 pl-1">*</span>
+                )}
+            </span>
+        );
+        return (
+            <CheckboxFormatWrapper
+                label={labelWithAsterisk}
+                error={componentProps.error}
+            >
+                <input
+                    type="checkbox"
+                    value={value !== null ? value : ""}
+                    onChange={onChange}
+                />
+            </CheckboxFormatWrapper>
+        )
+    },
+    // CUSTOM_BLOCK_ENVIROMENT_DETAIL: ({ value = [], onChange, componentProps }) => {
+    //     const { displayInputElementType, columns = [] } = componentProps || {};
+
+    //     // ✅ Condition check
+    //     if (!displayInputElementType || displayInputElementType !== "CUSTOM_BLOCK_ENVIROMENT_DETAIL") {
+    //         return null;
+    //     }
+
+    //     return (
+    //         <table className="w-full mt-4 rounded-lg shadow mb-6">
+    //             <thead>
+    //                 <tr className="bg-gray-100 text-slate-600 text-left">
+    //                     <th className="p-2 font-thin text-sm">Step</th>
+    //                     {columns.length > 0 && columns.map((col, colIndex) => (
+    //                         <th
+    //                             key={colIndex}
+    //                             className="p-2 font-thin text-sm px-5 text-start"
+    //                         >
+    //                             {collab}
+    //                         </th>
+    //                     ))}
+    //                 </tr>
+    //             </thead>
+
+    //             <tbody>
+    //                 {value.length > 0 && value.map((row, rowIndex) => (
+    //                     <tr key={row.id || rowIndex}>
+    //                         {/* Step Number */}
+    //                         <td className="p-2">
+    //                             {(rowIndex + 1).toString().padStart(2, "0")}
+    //                         </td>
+
+    //                         {/* Render Columns */}
+    //                         {columns.length > 0 && columns.map((col, colIndex) => (
+    //                             <td key={colIndex} className="p-2 py-2.5">
+    //                                 {col?.displayFileds?.length > 0 && col?.displayFileds?.map((field, fieldIndex) => {
+    //                                     const fieldValue =
+    //                                         row?.[field?.displayFiledName] ??
+    //                                         field?.defaultValue ??
+    //                                         "";
+
+    //                                     switch (field?.displayInputElementType) {
+    //                                         case "INPUT_BOX":
+    //                                             return (
+    //                                                 <input
+    //                                                     key={fieldIndex}
+    //                                                     type="text"
+    //                                                     value={fieldValue}
+    //                                                     placeholder={field?.displayLable || "Enter"}
+    //                                                     className="w-full border rounded px-2 py-1"
+    //                                                     disabled={field?.disabled}
+    //                                                     onChange={(e) => {
+    //                                                         const newValue = [...value];
+    //                                                         newValue[rowIndex] = {
+    //                                                             ...newValue[rowIndex],
+    //                                                             [field?.displayFiledName]: e.target.value,
+    //                                                         };
+    //                                                         onChange(newValue);
+    //                                                     }}
+    //                                                 />
+    //                                             );
+
+    //                                         case "RADIO":
+    //                                             return (
+    //                                                 <div key={fieldIndex} className="flex gap-2">
+    //                                                     {field?.options?.length > 0 && field?.options?.map((opt, optIndex) => (
+    //                                                         <label key={optIndex} className="flex items-center gap-1">
+    //                                                             <input
+    //                                                                 type="radio"
+    //                                                                 name={`${rowIndex}-${field?.displayFiledName}`}
+    //                                                                 value={opt?.value}
+    //                                                                 checked={fieldValue === opt?.value}
+    //                                                                 disabled={field?.disabled}
+    //                                                                 onChange={() => {
+    //                                                                     const newValue = [...value];
+    //                                                                     newValue[rowIndex] = {
+    //                                                                         ...newValue[rowIndex],
+    //                                                                         [field?.displayFiledName]: opt?.value,
+    //                                                                     };
+    //                                                                     onChange(newValue);
+    //                                                                 }}
+    //                                                             />
+    //                                                             {opt?.label}
+    //                                                         </label>
+    //                                                     ))}
+    //                                                 </div>
+    //                                             );
+
+    //                                         case "CUSTOM":
+    //                                             return (
+    //                                                 <span key={fieldIndex} className="text-gray-600">
+    //                                                     {fieldValue || "NA"}
+    //                                                 </span>
+    //                                             );
+
+    //                                         default:
+    //                                             return (
+    //                                                 <span key={fieldIndex} className="text-gray-400">
+    //                                                     Unsupported
+    //                                                 </span>
+    //                                             );
+    //                                     }
+    //                                 })}
+    //                             </td>
+    //                         ))}
+    //                     </tr>
+    //                 ))}
+    //             </tbody>
+    //         </table>
+    //     );
+    // },
+
+    CUSTOM_BLOCK_ENVIROMENT_DETAIL: ({ value = [], onChange, componentProps }) => {
+        const { displayInputElementType, displayFileds = [], columns = [] } = componentProps || {};
+
+        if (displayInputElementType !== "CUSTOM_BLOCK_ENVIROMENT_DETAIL") {
+            return null;
+        }
+
+        return (
+            <table className="w-full mt-1 rounded-lg shadow mb-6">
+                <thead>
+                    <tr className="bg-gray-100 text-slate-600 text-left ">
+                        {columns.map((col, colIndex) => (
+                            <th
+                                key={colIndex}
+                                className="p-2 font-thin text-sm text-start"
+                            >
+                                {col.label}
+                                <span className="text-red-500 pl-1"> {col.mendatory ? "*" : ""}</span>
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {displayFileds.map((row, rowIndex) => (
+                        <tr key={rowIndex} className="">
+                            {columns.map((col, colIndex) => {
+                                const field = row.row.find(f => f["column-key"] === col.key);
+                                if (!field) return <td key={colIndex}>NA</td>;
+
+                                const fieldValue = field.defaultValue ?? "";
+
+                                switch (field.displayInputElementType) {
+                                    case "INPUT_BOX":
+                                        return (
+                                            <td key={colIndex} className="p-2">
+                                                <InputField
+                                                    // value={fieldValue === "NA" ? "" : fieldValue}
+                                                    placeholder={col.label || "Enter"}
+                                                    className="w-full"
+                                                    disabled={field.disabled}
+                                                    onChange={(e) => (e.target.value)}
+                                                />
+                                            </td>
+                                        );
+
+                                        case "RADIO_BUTTON":
+                                            return (
+                                                <td key={colIndex} className="p-2 py-2.5">
+                                                    <div className="flex gap-4">
+                                                        {field.options?.map((opt, optIndex) => (
+                                                            <label key={optIndex} className="flex items-center gap-1">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`${rowIndex}-${col.key}`} 
+                                                                    value={opt.value}
+                                                                    checked={field.defaultValue === opt.value} // ✅ always use latest defaultValue
+                                                                    disabled={field.disabled}
+                                                                    onChange={(e) => {
+                                                                        const newValue = [...displayFileds];
+                                                                        newValue[rowIndex] = {
+                                                                            ...newValue[rowIndex],
+                                                                            row: newValue[rowIndex].row.map(f =>
+                                                                                f["column-key"] === col.key
+                                                                                    ? { ...f, defaultValue: e.target.value } // ✅ update selected value
+                                                                                    : f
+                                                                            )
+                                                                        };
+                                                                        onChange(newValue);
+                                                                    }}
+                                                                />
+                                                                {opt.label}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </td>
+                                            );
+                                        
+                                    default:
+                                        return (
+                                            <td key={colIndex} className="p-2 text-gray-400">
+                                                Unsupported
+                                            </td>
+                                        );
+                                }
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
+    },
+
+    // CUSTOM_BLOCK_ENVIROMENT_DETAIL: ({ value = [], onChange, componentProps }) => {
+    //     const { displayInputElementType, displayFileds, columns } = componentProps || {};
+
+    //     // ✅ Fallback safe arrays
+    //     const safeColumns = Array.isArray(columns) ? columns : [];
+    //     const safeValue = Array.isArray(displayFileds) ? displayFileds : [];
+    //     // console.log("safeValue", safeValue);
+    //     // console.log("safeColumns", safeColumns);
+    //     // console.log("value", value);
+    //     // console.log("componentProps", componentProps);
+    //     console.log("displayFileds", displayFileds);
+
+    //     // ✅ Condition check
+    //     if (displayInputElementType !== "CUSTOM_BLOCK_ENVIROMENT_DETAIL") {
+    //         return null;
+    //     }
+
+    //     return (
+
+    //         <table className="w-full mt-1 rounded-lg shadow mb-6">
+    //             <thead>
+    //                 <tr className="bg-gray-100 text-slate-600 text-left">
+    //                     {safeColumns.map((col, colIndex) => (
+    //                         <th
+    //                             key={colIndex}
+    //                             className="p-2 font-thin text-sm px-5 text-start"
+    //                         >
+    //                             {col.label}
+    //                         </th>
+    //                     ))}
+    //                 </tr>
+    //             </thead>
+
+    //             <tbody>
+    //                 { displayFileds.map((row, rowIndex) => (
+    //                     <tr key={rowIndex}>
+    //                         {safeColumns.map((col, colIndex) => {
+    //                             // find the field matching this column
+    //                             const field = row.row.find(f => f["column-key"] === col.key);
+    //                             if (!field) return <td key={colIndex}>NA</td>;
+
+    //                             const fieldValue = field.defaultValue ?? "";
+    //                             const isFieldValueNA = fieldValue.toLowerCase() === "na";
+
+    //                             switch (field.displayInputElementType) {
+    //                                 case "INPUT_BOX":
+    //                                     return (
+    //                                         <td key={colIndex} className="p-2">
+    //                                             <input
+    //                                                 type="text"
+    //                                                 value={isFieldValueNA ? "" : fieldValue}
+    //                                                 placeholder={col.label || "Enter"}
+    //                                                 className="w-1/2 border rounded px-2 py-1"
+    //                                                 disabled={field.disabled}
+    //                                                 onChange={(e) => {
+    //                                                     const newValue = [...displayFileds];
+    //                                                     newValue[rowIndex].row = newValue[rowIndex].row.map(f =>
+    //                                                         f["column-key"] === col.key
+    //                                                             ? { ...f, defaultValue: e.target.value }
+    //                                                             : f
+    //                                                     );
+    //                                                     onChange(newValue);
+    //                                                 }}
+    //                                             />
+    //                                         </td>
+    //                                     );
+
+    //                                 case "RADIO_BUTTON":
+    //                                     return (
+    //                                         <td key={colIndex} className="p-2 py-2.5">
+    //                                             <div className="flex gap-2">
+    //                                                 {field.options?.map((opt, optIndex) => (
+    //                                                     <label key={optIndex} className="flex items-center gap-1">
+    //                                                         <input
+    //                                                             type="radio"
+    //                                                             name={`${rowIndex}-${col.key}`}
+    //                                                             value={opt.value}
+    //                                                             checked={fieldValue === opt.value && !isFieldValueNA}
+    //                                                             disabled={field.disabled}
+    //                                                             onChange={() => {
+    //                                                                 const newValue = [...displayFileds];
+    //                                                                 newValue[rowIndex].row = newValue[rowIndex].row.map(f =>
+    //                                                                     f["column-key"] === col.key
+    //                                                                         ? { ...f, defaultValue: opt.value }
+    //                                                                         : f
+    //                                                                 );
+    //                                                                 onChange(newValue);
+    //                                                             }}
+    //                                                         />
+    //                                                         {opt.label}
+    //                                                     </label>
+    //                                                 ))}
+    //                                             </div>
+    //                                         </td>
+    //                                     );
+
+    //                                 default:
+    //                                     return (
+    //                                         <td key={colIndex} className="p-2 text-gray-400">
+    //                                             Unsupported
+    //                                         </td>
+    //                                     );
+    //                             }
+    //                         })}
+    //                     </tr>
+    //                 ))}
+    //             </tbody>
+    //         </table>
+    //     );
+    // },
+
+
+
+
+
 }
 
 // Context for form data
@@ -812,6 +1178,7 @@ export const FormProvider = ({ children }) => {
 // ================ FormBuilder Component =================
 const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isProgressBar = true, setActiveTab, tabList }) => {
     console.log("formConfigDetails--->", formConfig);
+
     console.log("DefaultActiveStep-dhoom-machale", DefaultActiveStep);
     
     const router = useRouter()
@@ -838,6 +1205,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
         });
     };
 
+    // Set default active step
     useEffect(() => {
         if (DefaultActiveStep !== null) {
             setFormLoading(true)
@@ -922,7 +1290,6 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
         setLoading(true)
         if (validateStep()) {
             try {
-                // normalize step-wise formValues into single object
                 const normalizeMocFormData = (mocFormData) => {
                     if (!Array.isArray(mocFormData)) return mocFormData;
 
@@ -943,17 +1310,12 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
 
                 const mergedFormValues = normalizeMocFormData(formValues);
 
-                // merge attachments properly
-                // const finalFormData = {
-                //     ...mergedFormValues,
-                // };
-
                 const payload = {
                     mocConfigId: formConfig?.mocConfigId,
                     mocNo: formConfig?.mocNo,
                     mocFormData: mergedFormValues,
                 };
-                console.log("MOC Form API Payload:", payload);
+                // console.log("MOC Form API Payload:", payload);
 
                 const res = await createMocForm(payload).unwrap();
 
@@ -992,7 +1354,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
     }
 
     return (
-        <form className="overflow-auto h-screen">
+        <form className="">
             {isProgressBar && formConfig?.formSteps?.length > 1 && (
                 <StepperProgressBar
                     className="max-w-xl mx-auto"
@@ -1003,7 +1365,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
                 />
             )}
 
-            <div className="space-y-4 overflow-auto h-[70vh] max-w-full mx-auto ">
+            <div className="max-w-full mx-auto ">
                 {groupedComponents.map((group, groupIndex) => {
                     const separator = group.find((comp) => comp.displayInputElementType === "SEPARATOR");
                     const title = separator?.separatorName || formConfig?.formSteps?.[activeStep]?.stepName;
@@ -1016,18 +1378,19 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_IMPLEMENTATION" ||
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_BACKOUT" ||
                         group?.[0]?.displayInputElementType === "CUSTOM_BLOCK_PRECHANGE_TESTING" ||
-                        group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_POSTCHANGE_TESTING"
+                        group?.[1]?.displayInputElementType === "CUSTOM_BLOCK_POSTCHANGE_TESTING" ||
+                        group?.[1]?.displayInputElementType === "CHECK_BOX"
 
                     // const formGrid = formConfig?.formSteps?.[activeStep]?.isFormGrid
-                    console.log('description-->', group);
+                    // console.log('description-->', group);
 
                     return (
                         <Card key={groupIndex} className="rounded-2xl mb-6 p-4 pt-0">
                             <div className="text-lg font-bold mb-0">{title}</div>
                             <div className="text-sm font-normal text-gray-600 mb-5">{separator ? "" : description}</div>
 
-                            <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} >
-                                {/* <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} > */}
+                            {/* <div className={`${isGridLayout && !fullLayout ? "grid grid-cols-2" : "grid grid-cols-1"} gap-4`} > */}
+                            <div className={`${isGridLayout ? "grid grid-cols-1" : "grid grid-cols-1"} gap-4`} >
 
                                 {group.map((component, index) => {
                                     if (component.displayInputElementType === "SEPARATOR") return null;
@@ -1072,7 +1435,7 @@ const FormBuilder = ({ formConfig, isGridLayout, DefaultActiveStep = null, isPro
 
             {/* Footer Buttons */}
             <div className="flex items-center justify-end mt-2 h-fit ">
-                {(activeStep > 0 || (DefaultActiveStep !== null && DefaultActiveStep >= 0)) && (
+                {activeStep > 0 && (
                     <Button
                         type="button"
                         className="border-transparent text-slate-700 inline-flex"
