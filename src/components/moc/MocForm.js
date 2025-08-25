@@ -39,7 +39,7 @@ export default function MocForm() {
     const isGridLayout = formConfig?.formSteps?.isFormGrid !== true;
 
     return (
-        <div className='mt-4 w-full'>
+        <div className='overflow-auto h-screen no-scrollbar mt-4 w-full'>
             <FormProvider>
                 <FormBuilder
                     formConfig={formConfig}
