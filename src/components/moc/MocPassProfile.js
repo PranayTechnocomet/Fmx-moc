@@ -71,7 +71,7 @@ export default function MocPassProfile() {
                 console.log("res", res.data);
                 const updatedResponse = {
                     ...res.data,
-                    formSteps: res.data.stages
+                    formSteps: [...res.data.stages, res.data.closure]
                 }
                 console.log("updatedResponse", updatedResponse);
 
@@ -98,15 +98,9 @@ export default function MocPassProfile() {
         if (!mocDetails?._id) return
         setActiveStepLoading(true)
         const index = tabList.indexOf(activeTab);
-        console.log("index", index);
-
         setActiveStepController(index - 1);
         setActiveStepLoading(false);
     }, [activeTab])
-
-    console.log("activeStep--", activeStepController);
-    console.log("activeTab", activeTab);
-    console.log("mocDetails", mocDetails);
 
 
     if (loading) {
